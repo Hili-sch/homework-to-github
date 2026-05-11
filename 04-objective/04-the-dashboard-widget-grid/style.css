@@ -1,0 +1,17 @@
+.container {
+    border: 1px black solid;
+    display: grid;
+    grid-template-columns:1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    width: 80vw;
+    height: 80vh;
+    gap: 15px;
+    margin: auto auto;
+    /* justify-items: center;
+    align-items: center; */
+}
+
+.first {
+    display: grid;
+    place-items: center
+}

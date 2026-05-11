@@ -1,0 +1,40 @@
+a {
+    display: inline-block;
+    padding: 10px;
+    border: 1px gray solid;
+    border-radius: 12px;
+    background-color: rgb(236, 123, 202);
+    box-shadow: 2px 3px 7px 1px;
+    color: rgb(59, 58, 58);
+    transition: all 0.4s ease;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+a:hover {
+    background-color: rgb(240, 155, 214);
+    box-shadow: 2px 3px 9px 3px;
+    color: rgb(27, 27, 27);
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: rgba(0, 253, 253, 0.486);
+    height: 10vh;
+    width: 100%vw;
+    gap: 20px;
+    padding: 20px;
+}
+
+#logo {
+    margin-right: auto;
+}
+
+* {
+    box-sizing: border-box;
+}
+
