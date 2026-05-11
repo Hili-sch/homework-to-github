@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 70vw;
+  height: 100vh;
+  flex-wrap: wrap;
+  gap: 15px;
+  border: 1px black solid;
+  margin: auto auto;
+  justify-content: center;
+  align-content: space-evenly;
+}
+
+.box {
+  height: 250px;
+  flex-basis: 200px;
+  flex-shrink: 1;
+}
+
+.first,
+.fourth {
+  background-color: red;
+  flex-grow: 5;
+}
+
+.second,
+.fifth {
+  background-color: green;
+  flex-grow: 10;
+}
+
+.third,
+.sixth {
+  background-color: blue;
+  flex-grow: 1;
+}
