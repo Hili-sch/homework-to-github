@@ -1,0 +1,42 @@
+.box {
+    border: 1px black solid;
+    min-height: 70vh;
+    padding: 2rem;
+    border-radius: 10px;
+}
+
+* {
+    box-sizing: border-box;
+
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.6rem;
+}
+
+.conttainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.main {
+    width: 70vw;
+}
+
+.aside {
+    width: 30vw;
+}
+
+header {
+    height: 10vh;
+    padding: 2rem;
+    border: 3px black solid;
+    border-radius: 8px;
+    background-color: darkslategray;
+    position: sticky;
+    top: 0;
+}
