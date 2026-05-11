@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework forms</title>
+    <link rel="stylesheet" href="style.css">
+
+     <!-- /*כאן דרסתי מצבע חום*/ -->
+    <style> 
+        h2{
+            color: blueviolet;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="form-conttainer">
+        <div class="container">
+            <h1>Hili's Musical Instrument Course</h1>
+            <h2>Please complete the registration form</h2>
+        </div>
+        <form action="https://formspree.io/f/xbdqgyyb" method="post">
+            <div class="container" id="personal-info-conttiner">
+                <div class="personal-info">
+                    <label class="color-lightblue" id="label-name" for="name">Your Name</label>
+                    <input type="text" id="name" name="name">
+                </div>
+                <div>
+                    <label class="color-lightblue" for="age">Age</label>
+                    <input type="number" min="5" max="120" id="age" name="age">
+                </div>
+                <div>
+                    <label class="color-lightblue" for="birthday">Date of Birth</label>
+                    <input type="date" id="birthday" name="birthday">
+                </div>
+                <div class="personal-info">
+                    <label class="color-lightblue" for="mobile">Mobile number</label>
+                    <input type="tel" id="mobile" name="mobile">
+                </div>
+                <div class="personal-info">
+
+                    <!-- בשורה הבאה ישנה דריסת עיצוב ע"י אינליין -->
+
+                    <label style="color: rgb(115, 12, 211);" class="color-lightblue" for="email">Email</label>
+                    <input type="tel" id="email" name="email">
+                </div>
+            </div>
+            <div class="container" id="interests-conttiner">
+                <div class="interests">
+                    <label for="Specialization">The musical instrument you wish to specialize in</label>
+                    <select id="Specialization" name="Specialization">
+                        <option value="">Choose...</option>
+                        <option value="Recorder">Recorder</option>
+                        <option value="Violin">Violin</option>
+                        <option value="Piano">Piano</option>
+                        <option value="Clarinet">Clarinet</option>
+                        <option value="Saxophone">Saxophone</option>
+                    </select>
+                </div>
+                <div>
+                    <p>Past instruments</p>                     
+                    <input type="checkbox" id="recorder" name="past-instrumentts-recorder">
+                    <label class="checkbox" for="recorder">Recorder</label>
+                    <input type="checkbox" id="violin" name="past-instrumentts-violin">
+                    <label class="checkbox" for="violin">Violin</label>
+                    <input type="checkbox" id="piano" name="past-instrumentts-piano">
+                    <label class="checkbox" for="piano">Piano</label>
+                    <input type="checkbox" id="clarinet" name="past-instrumentts-clarinet">
+                    <label class="checkbox" for="clarinet">Clarinet</label>
+                    <input type="checkbox" id="saxophone" name="past-instrumentts-saxophone">
+                    <label class="checkbox" for="saxophone">Saxophone</label>
+                </div>
+                <div class="interests" id="learning-method">
+                    <p>Choose a learning method</p>
+                    <input type="radio" id="in-person" name="learning-method">
+                    <label class="radio" for="in-person">In-person learning</label>
+                    <input type="radio" id="Virtual" name="learning-method">
+                    <label class="radio" for="Virtual">Online course learning</label>
+                    <input type="radio" id="Group" name="learning-method">
+                    <label class="radio" for="Group">Group learning</label>
+                </div>
+            </div>
+            <div class="container" id="send-conttiner">
+                <div id="consent-conttiner">
+                    <input type="checkbox" id="consent" required name="consent">
+                    <label class="checkbox" for="consent" required>I consent to receive updates via email and
+                        WhatsApp</label>
+                </div>
+                <button type="submit">Send</button>
+                <button type="reset">reset</button>
+            </div>
+    </div>
+    </form>
+</body>
+
+</html>

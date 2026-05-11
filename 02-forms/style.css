@@ -1,0 +1,79 @@
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+div,
+button {
+    margin: 0.5rem;
+}
+
+
+label {/*הגדרה ראשית ללבל*/
+    display: block;
+    cursor: pointer;
+    margin: 0.1rem;
+    color: rgb(41, 41, 158);
+}
+
+/*דריסה באמצעות-id*/
+#label-name {
+    color: red;
+}
+
+/*דריסה בקלאס*/
+.color-lightblue {
+    color: rgb(53, 152, 185);
+}
+
+.radio,
+.checkbox {
+    display: inline;
+}
+
+input,
+select {
+    width: 40%;
+    max-width: 150px;
+}
+
+select {
+    padding: 2px;
+    box-sizing: content-box;
+}
+
+#in-person,
+#Virtual,
+#Group,
+#consent,
+#recorder,
+#violin,
+#piano,
+#clarinet,
+#saxophone {
+    width: initial;
+    margin: 0px;
+}
+
+.inline-div {
+    display: flex;
+}
+
+#form-conttainer {
+    width: 550px;
+    border: 1px solid black;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 16px;
+    background-color: rgb(241, 232, 145);
+}
+
+button {
+    cursor: pointer;
+}
+
+.checkbox, .radio {
+    margin-right: 10px;
+}
+h1,h2 {
+    color: brown;
+}
