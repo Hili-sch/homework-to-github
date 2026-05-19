@@ -1,4 +1,4 @@
-
+//----------------------------<code>--------------
 function processQueue(queue, logs) {
   const cleanQueue = [];
 
@@ -34,6 +34,7 @@ function processQueue(queue, logs) {
         }
       }
 
+  
       switch (currentRequest.type) {
         case "AI_PROMPT":
           console.log("Routing to LLM Engine...");
@@ -51,12 +52,18 @@ function processQueue(queue, logs) {
     }
   }
 
-  for (let i = logs.length - 1; i >= logs.length - 3; i--) {
+
+
+  for (let i = logs.length - 1; i >= Math.max(0, logs.length - 3); i--) {
     console.log(logs[i]);
     
   }
 }
+//------------------------------------</code>---------------------------------
 
+//===========================================================================
+
+//------------------------------------<data>----------------------------------
 
 const requestsQueue = [
   {
@@ -108,7 +115,10 @@ const actionLogs = [
   "connect_db",
   "ready",
 ];
+//----------------------</data>--------------------------
 
+//=======================================================
 
+//-------------------<function>--------------------------
 
 processQueue(requestsQueue, actionLogs)
