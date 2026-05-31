@@ -1,7 +1,7 @@
-import { getNumber } from "../utils.js";
+import { getInteger } from "../utils.js";
 
-const koter = getNumber(10, 40)
-const depth = getNumber(10, 40)
+const koter = getInteger(10, 40)
+const depth = getInteger(10, 40)
 
 console.log("koter is:", koter);
 console.log("depth is:", depth);

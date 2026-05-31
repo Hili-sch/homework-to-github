@@ -1,8 +1,8 @@
-import { getNumber } from "../utils.js";
+import { getInteger } from "../utils.js";
 
 const employeeName = "anonymous"
 
-let salary = getNumber(4500, 35000)
+let salary = getInteger(4500, 35000)
 
 console.log(`the salary for ${employeeName} before uploading is: ${salary}`);
 

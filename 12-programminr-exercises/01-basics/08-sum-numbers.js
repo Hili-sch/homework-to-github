@@ -1,6 +1,6 @@
-import { getNumber } from "../utils.js";
+import { getInteger } from "../utils.js";
 
-const randomInt = getNumber(10, 99)
+const randomInt = getInteger(10, 99)
 
 console.log("number is:", randomInt);
 

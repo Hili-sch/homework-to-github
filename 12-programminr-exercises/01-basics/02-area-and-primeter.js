@@ -1,8 +1,8 @@
-import { getNumber } from "../utils.js";
+import { getInteger } from "../utils.js";
 
-const length = getNumber(21, 40)
+const length = getInteger(21, 40)
 
-const width = getNumber(5, 20)
+const width = getInteger(5, 20)
 
 console.log(`length: ${length}, width:${width}`);
 

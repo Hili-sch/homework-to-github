@@ -1,6 +1,6 @@
-import { getNumber } from "../utils.js";
+import { getInteger } from "../utils.js";
 
-const num = getNumber()
+const num = getInteger()
 
 console.log("the number is:", num);
 
