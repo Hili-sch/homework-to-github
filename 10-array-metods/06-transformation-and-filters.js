@@ -8,8 +8,6 @@ const expensiveProducts = products.filter((obj) => obj.price >= 20);
 
 console.log(expensiveProducts);
 
-const ids = expensiveProducts.map((obj) => {
-  return obj.id;
-});
+const ids = expensiveProducts.map((obj) =>  obj.id);
 
 console.log(ids);
