@@ -1,0 +1,1877 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Agents Command Center</title>
+    <link
+      rel="icon"
+      href="https://cdn-icons-png.flaticon.com/512/6183/6183067.png"
+      type="image/png"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <input type="radio" name="theme" id="theme-dark" checked hidden />
+    <input type="radio" name="theme" id="theme-light" hidden />
+
+    <input type="radio" name="active-user" id="user-1" checked hidden />
+    <input type="radio" name="active-user" id="user-2" hidden />
+    <input type="radio" name="active-user" id="user-3" hidden />
+
+    <input type="radio" name="language" id="lang-en" checked hidden />
+    <input type="radio" name="language" id="lang-he" hidden />
+
+    <input type="checkbox" id="mobile-menu-toggle" class="mobile-menu-toggle" />
+    <label for="mobile-menu-toggle" class="hamburger-btn">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <div class="dashboard-layout">
+      <aside class="sidebar rtl-container">
+        <div class="logo">
+          <div class="logo-icon">A</div>
+          <h2>
+            <span class="en">AI AGENTS</span><span class="he">סוכני AI</span>
+          </h2>
+        </div>
+
+        <div class="search-bar sidebar-search">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="en-input" placeholder="Search Agents..." />
+          <input type="text" class="he-input" placeholder="חפש סוכנים..." />
+        </div>
+
+        <nav class="main-nav">
+          <ul>
+            <li>
+              <a href="#home"
+                ><span class="icon">🏠</span> <span class="en">Home</span
+                ><span class="he">ראשי</span></a
+              >
+            </li>
+            <li>
+              <a href="#agents-logs"
+                ><span class="icon">🤖</span> <span class="en">Agents</span
+                ><span class="he">סוכנים</span></a
+              >
+            </li>
+            <li>
+              <a href="#executions-stats"
+                ><span class="icon">⚡</span> <span class="en">Executions</span
+                ><span class="he">ביצועים</span></a
+              >
+            </li>
+            <li>
+              <a href="#create-agent"
+                ><span class="icon">➕</span>
+                <span class="en">Create Agent</span
+                ><span class="he">צור סוכן</span></a
+              >
+            </li>
+            <li>
+              <a href="#home"
+                ><span class="icon">📊</span> <span class="en">Analytics</span
+                ><span class="he">אנליטיקה</span></a
+              >
+            </li>
+          </ul>
+        </nav>
+        <div class="bottom-nav">
+          <div class="settings-container sidebar-lang">
+            <input
+              type="checkbox"
+              id="sidebar-lang-toggle"
+              class="settings-toggle-chk"
+              hidden
+            />
+            <label for="sidebar-lang-toggle" class="settings-backdrop"></label>
+
+            <label for="sidebar-lang-toggle" class="settings-btn">
+              <span class="icon">🌐</span> <span class="en">Language</span
+              ><span class="he">שפה</span>
+            </label>
+
+            <div class="settings-dropdown">
+              <span class="dropdown-label"
+                ><span class="en">Select Language</span
+                ><span class="he">בחר שפה</span></span
+              >
+              <label
+                for="lang-en"
+                class="dropdown-item lang-option-en"
+                onclick="
+                  document.getElementById('sidebar-lang-toggle').checked = false
+                "
+                >🇺🇸 English</label
+              >
+              <label
+                for="lang-he"
+                class="dropdown-item lang-option-he"
+                onclick="
+                  document.getElementById('sidebar-lang-toggle').checked = false
+                "
+                >🇮🇱 עברית</label
+              >
+            </div>
+          </div>
+
+          <div class="settings-container">
+            <input
+              type="checkbox"
+              id="accounts-toggle"
+              class="settings-toggle-chk"
+              hidden
+            />
+            <label for="accounts-toggle" class="settings-backdrop"></label>
+
+            <label for="accounts-toggle" class="settings-btn">
+              <span class="icon">👥</span> <span class="en">Accounts</span
+              ><span class="he">חשבונות</span>
+            </label>
+
+            <div class="settings-dropdown">
+              <span class="dropdown-label"
+                ><span class="en">Switch Account</span
+                ><span class="he">החלף חשבון</span></span
+              >
+              <label
+                for="user-1"
+                class="dropdown-item user-option-1"
+                onclick="
+                  document.getElementById('accounts-toggle').checked = false
+                "
+                ><span class="icon">👨🏻‍💼</span> Hili Schlesinger</label
+              >
+              <label
+                for="user-2"
+                class="dropdown-item user-option-2"
+                onclick="
+                  document.getElementById('accounts-toggle').checked = false
+                "
+                ><span class="icon">👨🏼‍💻</span> Alex Chen</label
+              >
+              <label
+                for="user-3"
+                class="dropdown-item user-option-3"
+                onclick="
+                  document.getElementById('accounts-toggle').checked = false
+                "
+                ><span class="icon">👨🏽‍🏫</span> Jordan Lee</label
+              >
+            </div>
+          </div>
+
+          <div class="settings-container">
+            <input
+              type="checkbox"
+              id="settings-toggle"
+              class="settings-toggle-chk"
+              hidden
+            />
+            <label for="settings-toggle" class="settings-backdrop"></label>
+
+            <label for="settings-toggle" class="settings-btn">
+              <span class="icon">⚙️</span> <span class="en">Settings</span
+              ><span class="he">הגדרות</span>
+            </label>
+
+            <div class="settings-dropdown">
+              <label
+                for="theme-light"
+                class="dropdown-item theme-option"
+                onclick="
+                  document.getElementById('settings-toggle').checked = false
+                "
+                ><span class="icon">☀️</span> <span class="en">Light Mode</span
+                ><span class="he">מצב בהיר</span></label
+              >
+              <label
+                for="theme-dark"
+                class="dropdown-item theme-option"
+                onclick="
+                  document.getElementById('settings-toggle').checked = false
+                "
+                ><span class="icon">🌙</span> <span class="en">Dark Mode</span
+                ><span class="he">מצב כהה</span></label
+              >
+              <div class="dropdown-divider"></div>
+              <a
+                href="#"
+                class="dropdown-item"
+                onclick="
+                  document.getElementById('settings-toggle').checked = false
+                "
+                ><span class="icon">🔔</span>
+                <span class="en">Notifications</span
+                ><span class="he">התראות</span></a
+              >
+              <a
+                href="#"
+                class="dropdown-item"
+                onclick="
+                  document.getElementById('settings-toggle').checked = false
+                "
+                ><span class="icon">🔒</span> <span class="en">Privacy</span
+                ><span class="he">פרטיות</span></a
+              >
+            </div>
+          </div>
+
+          <div class="user-profile" title="Contact Current User">
+            <div class="avatar-wrapper">
+              <img
+                src="https://randomuser.me/api/portraits/men/99.jpg"
+                alt="Hili Avatar"
+                class="avatar avatar-1"
+              />
+              <img
+                src="https://randomuser.me/api/portraits/men/32.jpg"
+                alt="Alex Avatar"
+                class="avatar avatar-2"
+              />
+              <img
+                src="https://randomuser.me/api/portraits/men/45.jpg"
+                alt="Jordan Avatar"
+                class="avatar avatar-3"
+              />
+              <span class="notification-badge">3</span>
+            </div>
+
+            <div class="user-info">
+              <span class="user-name name-1">Hili Schlesinger</span>
+              <span class="user-name name-2">Alex Chen</span>
+              <span class="user-name name-3">Jordan Lee</span>
+              <span class="user-role"
+                ><span class="en">SysAdmin</span
+                ><span class="he">מנהל מערכת</span></span
+              >
+            </div>
+
+            <span class="mobile-user-status">
+              <span class="u-1">Hili</span>
+              <span class="u-2">Alex</span>
+              <span class="u-3">Jordan</span>
+              <span class="en">Admin</span>
+              <span class="he">מנהל</span>
+            </span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="top-header rtl-container">
+          <div class="header-title">
+            <h2>
+              <span class="en">Command Center</span
+              ><span class="he">מרכז בקרה</span>
+            </h2>
+            <p>
+              <span class="en">Manage, monitor and deploy your AI agents</span
+              ><span class="he">נהל, נטר ופרוס את סוכני ה-AI שלך</span>
+            </p>
+          </div>
+
+          <div class="header-actions">
+            <div class="search-bar main-search">
+              <span class="search-icon">🔍</span>
+              <input
+                type="text"
+                class="en-input"
+                placeholder="Search Agents..."
+              />
+              <input type="text" class="he-input" placeholder="חפש סוכנים..." />
+            </div>
+
+            <div class="settings-container lang-container header-lang">
+              <input
+                type="checkbox"
+                id="lang-menu-toggle"
+                class="settings-toggle-chk"
+                hidden
+              />
+              <label for="lang-menu-toggle" class="settings-backdrop"></label>
+
+              <label
+                for="lang-menu-toggle"
+                class="globe-btn"
+                title="Switch Language"
+              >
+                🌐
+              </label>
+
+              <div class="settings-dropdown lang-dropdown">
+                <span class="dropdown-label"
+                  ><span class="en">Language</span
+                  ><span class="he">שפה</span></span
+                >
+                <label
+                  for="lang-en"
+                  class="dropdown-item lang-option-en"
+                  onclick="
+                    document.getElementById('lang-menu-toggle').checked = false
+                  "
+                  >🇺🇸 English</label
+                >
+                <label
+                  for="lang-he"
+                  class="dropdown-item lang-option-he"
+                  onclick="
+                    document.getElementById('lang-menu-toggle').checked = false
+                  "
+                  >🇮🇱 עברית</label
+                >
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="bento-grid" id="home">
+          <div
+            class="bento-card stats-card rtl-container"
+            id="executions-stats"
+          >
+            <div class="card-header">
+              <h3>
+                <span class="en">Active Agents</span
+                ><span class="he">סוכנים פעילים</span>
+              </h3>
+              <span class="live-status"></span>
+            </div>
+            <div class="stat-value u-1">34</div>
+            <div class="trend-line positive u-1">
+              <span class="en">↗ +15% this week</span
+              ><span class="he">↗ +15% השבוע</span>
+            </div>
+            <div class="stat-value u-2">12</div>
+            <div class="trend-line danger u-2">
+              <span class="en">↘ -5% this week</span
+              ><span class="he">↘ -5% השבוע</span>
+            </div>
+            <div class="stat-value u-3">89</div>
+            <div class="trend-line positive u-3">
+              <span class="en">↗ +42% this week</span
+              ><span class="he">↗ +42% השבוע</span>
+            </div>
+          </div>
+
+          <div class="bento-card stats-card rtl-container">
+            <div class="card-header">
+              <h3>
+                <span class="en">Total Executions</span
+                ><span class="he">סה"כ ביצועים</span>
+              </h3>
+            </div>
+            <div class="stat-value u-1">12.5k</div>
+            <div class="css-loader-wrapper u-1">
+              <span class="css-spinner"></span>
+              <span class="en">Processing</span><span class="he">מעבד</span>
+            </div>
+            <div class="stat-value u-2">3.2k</div>
+            <div class="css-loader-wrapper u-2">
+              <span
+                class="css-spinner"
+                style="border-top-color: var(--warning)"
+              ></span>
+              <span class="en">Idle</span><span class="he">ממתין</span>
+            </div>
+            <div class="stat-value u-3">45.1k</div>
+            <div class="css-loader-wrapper u-3">
+              <span class="css-spinner"></span>
+              <span class="en">Processing</span><span class="he">מעבד</span>
+            </div>
+          </div>
+
+          <div class="bento-card stats-card rtl-container">
+            <div class="card-header">
+              <h3>
+                <span class="en">Token Usage</span
+                ><span class="he">שימוש בטוקנים</span>
+              </h3>
+            </div>
+            <div class="stat-value u-1">4.2M</div>
+            <div class="trend-line warning u-1">
+              ≈ 150k / <span class="en">day</span><span class="he">יום</span>
+            </div>
+            <div class="stat-value u-2">850k</div>
+            <div class="trend-line success u-2">
+              ≈ 30k / <span class="en">day</span><span class="he">יום</span>
+            </div>
+            <div class="stat-value u-3">12.4M</div>
+            <div class="trend-line danger u-3">
+              ≈ 400k / <span class="en">day</span><span class="he">יום</span>
+            </div>
+          </div>
+
+          <div class="bento-card stats-card rtl-container">
+            <div class="card-header">
+              <h3>
+                <span class="en">System Health</span
+                ><span class="he">בריאות מערכת</span>
+              </h3>
+            </div>
+            <div class="stat-value u-1">98%</div>
+            <div class="progress-bar-container u-1">
+              <div class="progress-bar" style="width: 98%"></div>
+            </div>
+            <div class="stat-value u-2">82%</div>
+            <div class="progress-bar-container u-2">
+              <div
+                class="progress-bar"
+                style="width: 82%; background-color: var(--warning)"
+              ></div>
+            </div>
+            <div class="stat-value u-3">99%</div>
+            <div class="progress-bar-container u-3">
+              <div class="progress-bar" style="width: 99%"></div>
+            </div>
+          </div>
+
+          <div class="bento-card form-card rtl-container" id="create-agent">
+            <h3>
+              <span class="en">Create New Agent</span
+              ><span class="he">צור סוכן חדש</span>
+            </h3>
+            <form
+              action="https://formspree.io/f/xpqblzro"
+              method="POST"
+              class="agent-form"
+            >
+              <div class="form-group">
+                <label for="agentName"
+                  ><span class="en">Agent Name</span
+                  ><span class="he">שם הסוכן</span></label
+                >
+                <input
+                  type="text"
+                  id="agentName_en"
+                  name="agentName"
+                  class="en-input"
+                  required
+                  placeholder="e.g. DataScraper_01"
+                  minlength="3"
+                />
+                <input
+                  type="text"
+                  id="agentName_he"
+                  name="agentName"
+                  class="he-input"
+                  required
+                  placeholder="לדוגמה DataScraper_01"
+                  minlength="3"
+                />
+              </div>
+              <div class="form-group">
+                <label for="adminEmail"
+                  ><span class="en">Admin Email</span
+                  ><span class="he">אימייל מנהל</span></label
+                >
+                <input
+                  type="email"
+                  id="adminEmail"
+                  name="adminEmail"
+                  required
+                  placeholder="admin@domain.com"
+                />
+              </div>
+              <div class="form-group">
+                <label for="modelSelect"
+                  ><span class="en">Select Model</span
+                  ><span class="he">בחר מודל</span></label
+                >
+                <select
+                  id="modelSelect_en"
+                  name="model"
+                  class="en-input"
+                  required
+                >
+                  <option value="" disabled selected>Choose a model...</option>
+                  <option value="gpt4o">GPT-4o</option>
+                  <option value="claude3opus">Claude 3 Opus</option>
+                  <option value="gemini15pro">Gemini 1.5 Pro</option>
+                  <option value="claude3sonnet">Claude 3.5 Sonnet</option>
+                  <option value="llama3">Llama 3 (70B)</option>
+                  <option value="mixtral">Mixtral 8x22B</option>
+                </select>
+                <select
+                  id="modelSelect_he"
+                  name="model"
+                  class="he-input"
+                  required
+                >
+                  <option value="" disabled selected>בחר מודל...</option>
+                  <option value="gpt4o">GPT-4o</option>
+                  <option value="claude3opus">Claude 3 Opus</option>
+                  <option value="gemini15pro">Gemini 1.5 Pro</option>
+                  <option value="claude3sonnet">Claude 3.5 Sonnet</option>
+                  <option value="llama3">Llama 3 (70B)</option>
+                  <option value="mixtral">Mixtral 8x22B</option>
+                </select>
+              </div>
+              <div class="form-group checkbox-group">
+                <label
+                  ><span class="en">Capabilities</span
+                  ><span class="he">יכולות</span></label
+                >
+                <div class="checkbox-options">
+                  <label
+                    ><input
+                      type="checkbox"
+                      name="capabilities"
+                      value="vision"
+                    />
+                    <span class="en">Vision</span
+                    ><span class="he">ראייה</span></label
+                  >
+                  <label
+                    ><input
+                      type="checkbox"
+                      name="capabilities"
+                      value="planning"
+                    />
+                    <span class="en">Planning</span
+                    ><span class="he">תכנון</span></label
+                  >
+                </div>
+              </div>
+              <div class="form-group toggle-group">
+                <span class="toggle-label-text"
+                  ><span class="en">Status (Active)</span
+                  ><span class="he">סטטוס (פעיל)</span></span
+                >
+                <div class="toggle-switch-container">
+                  <input
+                    type="checkbox"
+                    id="statusToggle"
+                    name="status"
+                    class="toggle-checkbox"
+                    checked
+                  />
+                  <label for="statusToggle" class="toggle-switch-label"></label>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                  <span class="en">Deploy Agent</span
+                  ><span class="he">פרוס סוכן</span>
+                </button>
+                <button type="reset" class="btn-reset" title="Reset Form">
+                  <span class="en">Reset</span><span class="he">אפס</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="bento-card table-card rtl-container" id="agents-logs">
+            <h3>
+              <span class="en">Agent Logs</span
+              ><span class="he">יומן סוכנים</span>
+            </h3>
+            <div class="table-wrapper custom-scrollbar">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>
+                      <span class="en">Agent</span><span class="he">סוכן</span>
+                    </th>
+                    <th>
+                      <span class="en">Tasks</span
+                      ><span class="he">משימות</span>
+                    </th>
+                    <th>
+                      <span class="en">Status</span
+                      ><span class="he">סטטוס</span>
+                    </th>
+                    <th>
+                      <span class="en">Duration</span
+                      ><span class="he">משך זמן</span>
+                    </th>
+                    <th>
+                      <span class="en">Actions</span
+                      ><span class="he">פעולות</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- ================= USER 1 (Hili Schlesinger) ================= -->
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/1.jpg"
+                          alt="Agent"
+                        /><span>Claude 3 Opus</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Data analysis and processing</span
+                      ><span class="he">ניתוח ועיבוד נתונים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>20m 30s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/2.jpg"
+                          alt="Agent"
+                        /><span>SysAdmin Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Routine system check</span
+                      ><span class="he">בדיקת מערכת שגרתית</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>2m 15s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/3.jpg"
+                          alt="Agent"
+                        /><span>Data Miner</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Scraping external sources</span
+                      ><span class="he">איסוף מקורות חיצוניים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>1m 12s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/4.jpg"
+                          alt="Agent"
+                        /><span>Server Monitor</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Ping network nodes</span
+                      ><span class="he">בדיקת תקינות צמתי רשת</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>1h 05m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/5.jpg"
+                          alt="Agent"
+                        /><span>Backup Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Nightly system snapshot</span
+                      ><span class="he">גיבוי מערכת לילי</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>45m 10s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/6.jpg"
+                          alt="Agent"
+                        /><span>Log Analyzer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Parse server error logs</span
+                      ><span class="he">סריקת יומני שגיאות שרת</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>12m 00s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/7.jpg"
+                          alt="Agent"
+                        /><span>Network Scanner</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Port vulnerability scan</span
+                      ><span class="he">סריקת פגיעויות בפורטים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>3m 40s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/8.jpg"
+                          alt="Agent"
+                        /><span>DB Optimizer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Database defragmentation</span
+                      ><span class="he">איחוי וייעול מסד נתונים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>8m 20s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/9.jpg"
+                          alt="Agent"
+                        /><span>Load Balancer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Traffic distribution rule</span
+                      ><span class="he">ניתוב עומסי תעבורה</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>12h 00m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/10.jpg"
+                          alt="Agent"
+                        /><span>SSL Manager</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Certificate auto-renewal</span
+                      ><span class="he">חידוש תעודות אבטחה</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>0m 45s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-1">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/11.jpg"
+                          alt="Agent"
+                        /><span>Firewall Config</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Update IP blocklist</span
+                      ><span class="he">עדכון רשימת חסימת כתובות</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>1m 05s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+
+                  <!-- ================= USER 2 (Alex Chen) ================= -->
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/20.jpg"
+                          alt="Agent"
+                        /><span>Docker Manager</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Container orchestration</span
+                      ><span class="he">ניהול קונטיינרים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>3h 45m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/21.jpg"
+                          alt="Agent"
+                        /><span>K8s Scaler</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Auto-scaling clusters</span
+                      ><span class="he">קנה מידה אוטומטי לשרתים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>1m 20s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/22.jpg"
+                          alt="Agent"
+                        /><span>Pipeline Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Run GitHub actions</span
+                      ><span class="he">הפעלת תהליכי GitHub</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>5m 10s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/23.jpg"
+                          alt="Agent"
+                        /><span>CI/CD Runner</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Deploy to staging</span
+                      ><span class="he">העלאה לסביבת טסטינג</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>2m 30s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/24.jpg"
+                          alt="Agent"
+                        /><span>Test Automator</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">E2E test suite</span
+                      ><span class="he">הרצת בדיקות מקצה לקצה</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>15m 00s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/25.jpg"
+                          alt="Agent"
+                        /><span>Image Builder</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Compile Docker image</span
+                      ><span class="he">בניית קובץ אימג' לדוקר</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>4m 12s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/26.jpg"
+                          alt="Agent"
+                        /><span>Registry Sync</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Push to cloud registry</span
+                      ><span class="he">סנכרון מאגר בענן</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>1m 45s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/27.jpg"
+                          alt="Agent"
+                        /><span>Cluster Health</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Node resource check</span
+                      ><span class="he">בדיקת משאבים בשרתים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>0m 50s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/28.jpg"
+                          alt="Agent"
+                        /><span>Pod Restarter</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Evict crashloop pods</span
+                      ><span class="he">אתחול שירותים קורסים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>2m 10s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/29.jpg"
+                          alt="Agent"
+                        /><span>Config Deployer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Apply YAML secrets</span
+                      ><span class="he">הטמעת סיסמאות ומפתחות</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>0m 15s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-2">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/30.jpg"
+                          alt="Agent"
+                        /><span>Cloud Watcher</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Monitor billing alerts</span
+                      ><span class="he">מעקב התראות חיוב בענן</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>4h 20m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+
+                  <!-- ================= USER 3 (Jordan Lee) ================= -->
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/40.jpg"
+                          alt="Agent"
+                        /><span>Ad Optimizer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Adjusting bid strategies</span
+                      ><span class="he">התאמת אסטרטגיית הצעות מחיר</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>5h 15m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/41.jpg"
+                          alt="Agent"
+                        /><span>SEO Crawler</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Site audit & indexing</span
+                      ><span class="he">ביקורת אתר ואינדקס</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>45m 00s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/42.jpg"
+                          alt="Agent"
+                        /><span>Content Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Generate blog outlines</span
+                      ><span class="he">יצירת ראשי פרקים לתוכן</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>10m 20s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/43.jpg"
+                          alt="Agent"
+                        /><span>Mail Campaigner</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Send newsletter batch</span
+                      ><span class="he">שליחת רשימת תפוצה</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>1h 10m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/44.jpg"
+                          alt="Agent"
+                        /><span>Analytics Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Fetch traffic metrics</span
+                      ><span class="he">שליפת מדדי תנועה</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>2m 05s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/45.jpg"
+                          alt="Agent"
+                        /><span>Lead Scorer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Evaluate CRM entries</span
+                      ><span class="he">סיווג ודירוג לידים חדשים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>35m 40s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/46.jpg"
+                          alt="Agent"
+                        /><span>Trend Analyzer</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Keyword volume check</span
+                      ><span class="he">בדיקת נפח חיפוש מילות מפתח</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>4m 30s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/47.jpg"
+                          alt="Agent"
+                        /><span>Social Scraper</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Monitor brand mentions</span
+                      ><span class="he">מעקב אחר אזכורי מותג</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-running"
+                        ><span class="en">Running</span
+                        ><span class="he">רץ</span></span
+                      >
+                    </td>
+                    <td>2h 15m</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/48.jpg"
+                          alt="Agent"
+                        /><span>Competitor Bot</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Track pricing changes</span
+                      ><span class="he">מעקב אחר שינויי תמחור</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>12m 00s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/49.jpg"
+                          alt="Agent"
+                        /><span>Conversion Tracker</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Match affiliate links</span
+                      ><span class="he">הצלבת קישורי שותפים</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-complete"
+                        ><span class="en">Complete</span
+                        ><span class="he">הושלם</span></span
+                      >
+                    </td>
+                    <td>1m 15s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                  <tr class="u-3">
+                    <td>
+                      <div class="agent-cell">
+                        <img
+                          src="https://randomuser.me/api/portraits/men/50.jpg"
+                          alt="Agent"
+                        /><span>CRM Sync</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="en">Update contact fields</span
+                      ><span class="he">עדכון רשומות אנשי קשר</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-failed"
+                        ><span class="en">Failed</span
+                        ><span class="he">נכשל</span></span
+                      >
+                    </td>
+                    <td>3m 20s</td>
+                    <td class="actions-cell">
+                      <button class="icon-btn">✏️</button
+                      ><button class="icon-btn">🗑️</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bento-card activity-card rtl-container">
+            <h3>
+              <span class="en">Recent Activity</span
+              ><span class="he">פעילות אחרונה</span>
+            </h3>
+            <div class="activity-list custom-scrollbar">
+              <!-- ================= USER 1 (Hili Schlesinger) ================= -->
+              <div class="activity-item u-1">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Code Reviewer</strong>
+                    <span class="en">started job</span
+                    ><span class="he">התחיל משימה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">Just now</span
+                    ><span class="he">ממש עכשיו</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>SEO Optimizer</strong>
+                    <span class="en">completed report</span
+                    ><span class="he">סיים דוח</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">2 mins ago</span
+                    ><span class="he">לפני 2 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Backup Bot</strong>
+                    <span class="en">finished snapshot</span
+                    ><span class="he">סיים לבצע גיבוי</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">10 mins ago</span
+                    ><span class="he">לפני 10 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon warning">⚠</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Server Monitor</strong>
+                    <span class="en">triggered alert</span
+                    ><span class="he">הפעיל התראה במערכת</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">15 mins ago</span
+                    ><span class="he">לפני 15 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon danger">✗</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Data Miner</strong>
+                    <span class="en">connection failed</span
+                    ><span class="he">שגיאת התחברות לשרת</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">1 hour ago</span
+                    ><span class="he">לפני שעה</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Log Analyzer</strong>
+                    <span class="en">parsed 10k lines</span
+                    ><span class="he">ניתח עשרת אלפים שורות</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">2 hours ago</span
+                    ><span class="he">לפני שעתיים</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Firewall Config</strong>
+                    <span class="en">updated rules</span
+                    ><span class="he">עדכן חוקי תעבורה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">3 hours ago</span
+                    ><span class="he">לפני 3 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>DB Optimizer</strong>
+                    <span class="en">cleared cache</span
+                    ><span class="he">ניקה נתונים זמניים</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">4 hours ago</span
+                    ><span class="he">לפני 4 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>SysAdmin Bot</strong>
+                    <span class="en">started maintenance</span
+                    ><span class="he">החל תהליך תחזוקה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">5 hours ago</span
+                    ><span class="he">לפני 5 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-1">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Network Scanner</strong>
+                    <span class="en">completed sweep</span
+                    ><span class="he">סיים סריקת רשת שלמה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">6 hours ago</span
+                    ><span class="he">לפני 6 שעות</span></span
+                  >
+                </div>
+              </div>
+
+              <!-- ================= USER 2 (Alex Chen) ================= -->
+              <div class="activity-item u-2">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Pipeline Bot</strong>
+                    <span class="en">started build</span
+                    ><span class="he">התחיל בנייה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">Just now</span
+                    ><span class="he">ממש עכשיו</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon danger">✗</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Test Automator</strong>
+                    <span class="en">failed tests</span
+                    ><span class="he">נכשל בבדיקות אוטומטיות</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">5 mins ago</span
+                    ><span class="he">לפני 5 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>CI/CD Runner</strong>
+                    <span class="en">deployed to prod</span
+                    ><span class="he">פרס לסביבת פרודקשן</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">12 mins ago</span
+                    ><span class="he">לפני 12 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Image Builder</strong>
+                    <span class="en">pushed tag v2.1</span
+                    ><span class="he">דחף גרסה חדשה לשרת</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">25 mins ago</span
+                    ><span class="he">לפני 25 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon warning">⚠</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Pod Restarter</strong>
+                    <span class="en">killed 2 pods</span
+                    ><span class="he">כיבה שני שירותים פעילים</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">40 mins ago</span
+                    ><span class="he">לפני 40 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon danger">✗</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Cluster Health</strong>
+                    <span class="en">memory alert</span
+                    ><span class="he">התראת זיכרון גבוה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">1 hour ago</span
+                    ><span class="he">לפני שעה</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Registry Sync</strong>
+                    <span class="en">synced 5 images</span
+                    ><span class="he">סנכרן קבצים חדשים</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">2 hours ago</span
+                    ><span class="he">לפני שעתיים</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Docker Manager</strong>
+                    <span class="en">scaled up nodes</span
+                    ><span class="he">הרחיב משאבי שרת</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">3 hours ago</span
+                    ><span class="he">לפני 3 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>K8s Scaler</strong>
+                    <span class="en">optimized cluster</span
+                    ><span class="he">ייעל משאבי קלאסטר</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">4 hours ago</span
+                    ><span class="he">לפני 4 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-2">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Cloud Watcher</strong>
+                    <span class="en">generated report</span
+                    ><span class="he">יצר דוח שימוש במשאבים</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">5 hours ago</span
+                    ><span class="he">לפני 5 שעות</span></span
+                  >
+                </div>
+              </div>
+
+              <!-- ================= USER 3 (Jordan Lee) ================= -->
+              <div class="activity-item u-3">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Analytics Bot</strong>
+                    <span class="en">report sent</span
+                    ><span class="he">דוח נשלח בהצלחה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">Just now</span
+                    ><span class="he">ממש עכשיו</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Content Bot</strong>
+                    <span class="en">drafted 3 posts</span
+                    ><span class="he">יצר 3 טיוטות לתוכן</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">8 mins ago</span
+                    ><span class="he">לפני 8 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Social Scraper</strong>
+                    <span class="en">found 50 mentions</span
+                    ><span class="he">מצא חמישים אזכורי מותג</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">20 mins ago</span
+                    ><span class="he">לפני 20 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon warning">⚠</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Mail Campaigner</strong>
+                    <span class="en">bounce rate high</span
+                    ><span class="he">התראת אחוזי נטישה בדוור</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">45 mins ago</span
+                    ><span class="he">לפני 45 דקות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Ad Optimizer</strong>
+                    <span class="en">increased budget</span
+                    ><span class="he">הגדיל תקציב פרסום יומי</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">1 hour ago</span
+                    ><span class="he">לפני שעה</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon danger">✗</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>CRM Sync</strong>
+                    <span class="en">connection timeout</span
+                    ><span class="he">נכשל בחיבור למערכת ניהול</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">2 hours ago</span
+                    ><span class="he">לפני שעתיים</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Trend Analyzer</strong>
+                    <span class="en">updated keywords</span
+                    ><span class="he">עדכן רשימת מילות מפתח</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">3 hours ago</span
+                    ><span class="he">לפני 3 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon info">⚡</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Competitor Bot</strong>
+                    <span class="en">detected new sale</span
+                    ><span class="he">זיהה מבצע אצל מתחרה</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">4 hours ago</span
+                    ><span class="he">לפני 4 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Conversion Tracker</strong>
+                    <span class="en">logged 15 sales</span
+                    ><span class="he">תיעד המרות ורכישות חדשות</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">5 hours ago</span
+                    ><span class="he">לפני 5 שעות</span></span
+                  >
+                </div>
+              </div>
+              <div class="activity-item u-3">
+                <span class="activity-icon success">✓</span>
+                <div class="activity-details">
+                  <p>
+                    <strong>Lead Scorer</strong>
+                    <span class="en">ranked 100 leads</span
+                    ><span class="he">דירג לקוחות פוטנציאליים</span>
+                  </p>
+                  <span class="activity-time"
+                    ><span class="en">6 hours ago</span
+                    ><span class="he">לפני 6 שעות</span></span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
