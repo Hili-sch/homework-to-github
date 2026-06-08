@@ -30,7 +30,7 @@ class ATM {
 
     this.#updateBalance(amount)
     this.#printReceipt(amount)
-    ATM.totalTransaction++
+    ATM.totalTransactions++
   }
 }
 
@@ -41,3 +41,4 @@ bank.withdraw("4564", 5000)
 bank.withdraw("1234", 8500)
 bank.withdraw("1234", 9870)
 bank.withdraw("1234", 987000)
+console.log(`Summary: ${ATM.totalTransactions} banking transactions were performed`);
