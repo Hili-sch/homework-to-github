@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- part 2 -->
+    <h1 id="title">
+      JavaScript is awesome<span style="display: none"> — hidden text</span>
+    </h1>
+    <h2 id="subtitle"></h2>
+
+    <!-- part 3 -->
+    <ul>
+      <li class="item">HTML</li>
+      <li class="item">CSS</li>
+      <li class="item">JavaScript</li>
+      <li class="item">React</li>
+    </ul>
+
+    <!-- part 4 -->
+    <form>
+      <div>
+        <label for="username">Username</label>
+        <input type="text" id="username" />
+      </div>
+      <input type="button" value="Submit" id="submit-btn" />
+    </form>
+
+    <script>
+      //part 1
+      //1
+      document.title = "Hili Schlesinger";
+
+      //2
+      document.head[0];
+      console.dir(document.head[0]);
+
+      //3
+      function introduce(greeting, name) {
+        console.log(`${greeting} ${name}`);
+      }
+
+      introduce("Hello there", "Hili");
+
+      //==================================================================
+      //part 2
+      //1
+      let title = document.getElementById("title");
+      console.dir(title);
+
+      //2
+      let subTitle = document.getElementById("subtitle");
+      subTitle.innerText = title.innerText;
+      //ספאן לא מופיע, כי זה הגדרה הכוללת את הסטייל המעלים את ספאן
+
+      //3
+      subTitle.innerText = title.innerHTML;
+      //ספאן מופיע בשפת תגיות,
+
+      //4
+      subTitle.style.backgroundColor = "lightblue";
+      subTitle.style.borderLeft = " 4px solid orange";
+
+      //===================================================================
+      //part 3
+      //1
+      const itemsByClass = document.getElementsByClassName("item");
+      console.log(itemsByClass);
+      //מרעך עם 4 פריטים
+
+      //2
+      for (let i = 0; i < itemsByClass.length; i++) {
+        itemsByClass[i].style.color = "darkblue";
+        //--3---------
+        if (i === 1) {
+          itemsByClass[i].style.border = "2px solid gray";
+        }
+      }
+
+      //4
+      itemsByClass[itemsByClass.length - 1].innerHTML =
+        '<a href="https://react.dev" target="_blank">React Docs</a>';
+
+      //5
+      const itemByTag = document.getElementsByTagName("li");
+      for (const item of itemByTag) {
+        item.style.backgroundColor = "lightyellow";
+      }
+
+      //==================================================================
+      //part 4
+
+      //1.
+      function handleClick() {
+        console.log("Button was clicked!");
+
+        //3
+        let userName = document.getElementById("username");
+        let valueName = userName.value;
+        console.log(`Hello, ${valueName}!`);
+      }
+
+      document
+        .getElementById("submit-btn")
+        .addEventListener("click", handleClick);
+      //2
+      document
+        .getElementById("submit-btn")
+        .addEventListener("mouseenter", handleClick); //מפעיל פונקציה גם בלי לחיצה, אלא גם במעבר
+
+      //4
+      document
+        .getElementById("submit-btn")
+        .addEventListener("mouseleave", () => {
+          let button = document.getElementById("submit-btn");
+          button.style.color = "coral";
+        });
+    </script>
+  </body>
+</html>
