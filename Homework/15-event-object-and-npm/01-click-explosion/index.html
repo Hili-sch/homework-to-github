@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0a0a14;
+        font-family: system-ui, sans-serif;
+        color: #aaa;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 20px;
+      }
+
+      h1 {
+        font-weight: 500;
+        letter-spacing: 1px;
+      }
+      .hint {
+        font-size: 14px;
+        opacity: 0.6;
+      }
+
+      /* === ה-canvas: שים לב ל-position: relative === */
+      /* זה מה שגורם ל-left/top של הנקודות להתייחס לפינה של ה-div הזה */
+      #canvas {
+        position: relative;
+        width: 90vw;
+        height: 75vh;
+        background: radial-gradient(circle at 50% 40%, #15152a, #060610);
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+
+      .particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: gold;
+
+        transition:
+          transform 0.6s ease-out,
+          opacity 0.6s ease-out;
+        pointer-events: none;
+      }
+
+      .spark {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: white;
+        box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+        transition: opacity 0.6s ease-out;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎆 Fireworks Canvas</h1>
+    <p class="hint">לחיצה = פיצוץ · תזוזה = שובל · Escape = ניקוי</p>
+
+    <div id="canvas"></div>
+    <script>
+      const canvas = document.getElementById("canvas");
+
+      let lastSpeed = 0;
+
+      setInterval(() => {
+        lastSpeed *= 0.9;
+      }, 30);
+      // נקודות הפיצוץ
+      canvas.addEventListener("click", function (e) {
+        const spark = document.createElement("div");
+        spark.classList.add("spark");
+        spark.style.left = e.offsetX + "px";
+        spark.style.top = e.offsetY + "px";
+        canvas.appendChild(spark);
+
+        setTimeout(() => {
+          spark.style.opacity = "0";
+        }, 50);
+
+        setTimeout(() => {
+          spark.remove();
+        }, 650);
+      });
+
+    //    אירוע 1 — פיצוץ (click)
+
+
+      canvas.addEventListener("click", function (e) {
+        const speedBoost = 1 + Math.min(lastSpeed / 20, 3);
+
+        for (let i = 0; i < 20; i++) {
+          const dot = document.createElement("div");
+          dot.classList.add("particle");
+
+          // בונוס 1: צבע אקראי לכל נקודה (גוון אקראי בין 0 ל-360 מעלות)
+          dot.style.background = `hsl(${Math.random() * 360}, 100%, 60%)`;
+
+          dot.style.left = e.offsetX + "px";
+          dot.style.top = e.offsetY + "px";
+          canvas.appendChild(dot);
+
+          const angle = Math.random() * 2 * Math.PI;
+          const distance = (40 + Math.random() * 80) * speedBoost; // בונוס 2: מוכפל לפי מהירות העכבר;
+          const dx = Math.cos(angle) * distance;
+          const dy = Math.sin(angle) * distance;
+
+          // הפעלת האנימציה לאחר ציור האלמנט
+          setTimeout(() => {
+            dot.style.transform = `translate(${dx}px, ${dy}px)`;
+            dot.style.opacity = "0";
+          }, 10);
+
+          setTimeout(() => dot.remove(), 700);
+        }
+      });
+
+      // שובל ניצוצות
+      canvas.addEventListener("mousemove", function (e) {
+        const speed = Math.hypot(e.movementX, e.movementY);
+        if (speed > lastSpeed) lastSpeed = speed;
+
+        const spark = document.createElement("div");
+        spark.classList.add("spark");
+        spark.style.left = e.offsetX + "px";
+        spark.style.top = e.offsetY + "px";
+        canvas.appendChild(spark);
+
+        setTimeout(() => {
+          spark.style.opacity = "0";
+        }, 50);
+        setTimeout(() => spark.remove(), 650);
+      });
+
+      // ניקוי בלחיצה על Escape
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          canvas.innerHTML = "";
+        }
+      });
+    </script>
+  </body>
+</html>
