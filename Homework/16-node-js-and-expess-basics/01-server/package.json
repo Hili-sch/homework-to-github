@@ -1,4 +1,13 @@
 {
+  "name": "01-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "01-04-app.js",
+  "scripts": {
+    "start": "node 01-04-app.js",
+    "start:5": "node 05-app.js",
+    "dev": "nodemon 01-04-app.js"
+  },
   "dependencies": {
     "express": "^5.2.1"
   }
