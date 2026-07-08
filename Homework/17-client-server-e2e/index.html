@@ -1,14 +1,57 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <input type="text" id="city-input" placeholder="Enter a city" />
-    <button id="weather-btn">Get Weather</button>
-    <div id="weather-result"></div>
-    <script src="client.js"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="city-input" placeholder="Enter a city" />
+      <button id="weather-btn">Get Weather</button>
+    </div>
+
+    <div id="error-message" class="error-message" style="display: none;">
+      No information found for this city
+    </div>
+
+    <table id="city-table" class="city-table">
+      <thead>
+        <tr>
+          <th class="field-header">Field</th>
+          <th class="value-header">Value</th>
+        </tr>
+      </thead>
+      <tbody id="table-body" class="table-body">
+        <tr class="data-row" data-field="city">
+          <td class="field-label">City</td>
+          <td class="field-value" id="value-city"></td>
+        </tr>
+        <tr class="data-row" data-field="country">
+          <td class="field-label">Country</td>
+          <td class="field-value" id="value-country"></td>
+        </tr>
+        <tr class="data-row" data-field="temperature_c">
+          <td class="field-label">Temperature (°C)</td>
+          <td class="field-value" id="value-temperature_c"></td>
+        </tr>
+        <tr class="data-row" data-field="humidity">
+          <td class="field-label">Humidity (%)</td>
+          <td class="field-value" id="value-humidity"></td>
+        </tr>
+        <tr class="data-row" data-field="radiation">
+          <td class="field-label">Radiation (W/m²)</td>
+          <td class="field-value" id="value-radiation"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="client.js"></script>
+</body>
+
 </html>
