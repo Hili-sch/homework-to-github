@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "name": "Dell Latitude 5340 Laptop",
+    "description": "Reliable laptop for development.",
+    "price": 4200.0,
+    "category": "Computers & Peripherals",
+    "inStock": true
+  },
+  {
+    "id": 2,
+    "name": "Xerox WorkCentre 3025 Printer",
+    "description": "Wireless laser printer with scanner.",
+    "price": 550.0,
+    "category": "Computers & Peripherals",
+    "inStock": true
+  },
+  {
+    "id": 3,
+    "name": "Classic 4/4 Violin",
+    "description": "Handmade wooden violin with case.",
+    "price": 1200.0,
+    "category": "Musical Instruments",
+    "inStock": true
+  },
+  {
+    "id": 4,
+    "name": "Book: JavaScript & Full-Stack Dev",
+    "description": "Comprehensive guide for web apps.",
+    "price": 180.0,
+    "category": "Books & Education",
+    "inStock": true
+  },
+  {
+    "id": 5,
+    "name": "Custom Canvas Print",
+    "description": "High-quality print with wooden frame.",
+    "price": 250.0,
+    "category": "Art & Design",
+    "inStock": true
+  },
+  {
+    "id": 6,
+    "name": "Mechanical Keyboard (Brown Switches)",
+    "description": "Ergonomic keyboard for coding.",
+    "price": 350.0,
+    "category": "Computers & Peripherals",
+    "inStock": false
+  },
+  {
+    "id": 7,
+    "name": "27-inch 4K Monitor",
+    "description": "High-resolution wide monitor.",
+    "price": 1450.0,
+    "category": "Computers & Peripherals",
+    "inStock": true
+  },
+  {
+    "id": 8,
+    "name": "Online Course: DOM & APIs",
+    "description": "Advanced web dev course access.",
+    "price": 400.0,
+    "category": "Books & Education",
+    "inStock": true
+  },
+  {
+    "id": 9,
+    "name": "Ergonomic Laptop Stand",
+    "description": "Adjustable aluminum stand.",
+    "price": 120.0,
+    "category": "Office Supplies",
+    "inStock": true
+  },
+  {
+    "id": 10,
+    "name": "Office Software License",
+    "description": "Annual license for data processing.",
+    "price": 299.0,
+    "category": "Software",
+    "inStock": true
+  },
+  {
+    "id": 11,
+    "name": "AI Coding Assistant Pro",
+    "description": "Annual subscription for AI-powered code generation.",
+    "price": 150.0,
+    "category": "Software",
+    "inStock": true
+  },
+  {
+    "id": 12,
+    "name": "Advanced Excel Masterclass",
+    "description": "Learn complex formulas and data management.",
+    "price": 85.0,
+    "category": "Books & Education",
+    "inStock": true
+  },
+  {
+    "id": 13,
+    "name": "Wood Engraved Wall Art",
+    "description": "Precision laser-engraved wooden decor.",
+    "price": 190.0,
+    "category": "Art & Design",
+    "inStock": true
+  },
+  {
+    "id": 14,
+    "name": "Premium Violin Strings Set",
+    "description": "High-quality synthetic core strings.",
+    "price": 80.0,
+    "category": "Musical Instruments",
+    "inStock": true
+  },
+  {
+    "id": 15,
+    "name": "Wireless Mouse",
+    "description": "Precision wireless mouse with programmable buttons.",
+    "price": 110.0,
+    "category": "Computers & Peripherals",
+    "inStock": true
+  },
+  {
+    "id": 16,
+    "name": "Java Programming Mastery",
+    "description": "Deep dive into object-oriented programming with Java.",
+    "price": 140.0,
+    "category": "Books & Education",
+    "inStock": true
+  },
+  {
+    "id": 17,
+    "name": "Noise-Cancelling Headphones",
+    "description": "Over-ear headphones for focused coding sessions.",
+    "price": 850.0,
+    "category": "Computers & Peripherals",
+    "inStock": true
+  },
+  {
+    "id": 18,
+    "name": "Dashboard UI Template",
+    "description": "Premium admin dashboard template for web apps.",
+    "price": 45.0,
+    "category": "Software",
+    "inStock": true
+  },
+  {
+    "id": 19,
+    "name": "USB-C Hub",
+    "description": "Multi-port adapter with HDMI and USB 3.0.",
+    "price": 160.0,
+    "category": "Computers & Peripherals",
+    "inStock": false
+  },
+  {
+    "id": 20,
+    "name": "Git & Version Control Guide",
+    "description": "Best practices for repository management.",
+    "price": 60.0,
+    "category": "Books & Education",
+    "inStock": true
+  }
+]
