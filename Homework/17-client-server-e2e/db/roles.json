@@ -1,0 +1,26 @@
+[
+  {
+    "roleId": 1,
+    "roleName": "Admin",
+    "description": "Full access to all system features.",
+    "permissions": ["create", "read", "update", "delete"]
+  },
+  {
+    "roleId": 2,
+    "roleName": "Editor",
+    "description": "Can read and update existing content.",
+    "permissions": ["read", "update"]
+  },
+  {
+    "roleId": 3,
+    "roleName": "User",
+    "description": "Standard user with read-only access.",
+    "permissions": ["read"]
+  },
+  {
+    "roleId": 4,
+    "roleName": "Guest",
+    "description": "Unregistered user with limited visibility.",
+    "permissions": []
+  }
+]

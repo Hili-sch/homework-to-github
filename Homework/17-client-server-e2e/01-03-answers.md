@@ -1,10 +1,10 @@
-## שאלה 1
+## שאלה 1 (הועתקה ל-server)
 * המערך צריך להיות של נמבר ולא סטרינגים ובלי גרשיים על המספרים
 * אפשר גם להמיר מערך לסטרינג כך 
 ```js
 const result = users.filter(u => ids.includes(String(u.id)))
 ```
-## שאלה 2
+## שאלה 2 (הועתקה ל-02-bug-fix)
 * השורה החסרה
 ```js
 import express from 'express'
@@ -19,7 +19,7 @@ app.post('/search', (req, res) => {
 
 app.listen(3000)
 ```
-## שאלה 3
+## שאלה 3 (הועתקה ל-server)
 ```js
 app.get('/roles', async (req, res) => {
   try {
