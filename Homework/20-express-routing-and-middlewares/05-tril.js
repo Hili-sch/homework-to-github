@@ -1,6 +1,7 @@
-## Exercise 5
-* code:
-```js
+import { Router } from "express";
+
+const router = Router()
+
 const stepOne = (req, res, next) => {
     res.locals.trail = 'start'
     next()
@@ -12,14 +13,8 @@ const stepTwo = (req, res, next) => {
     next()
 }
 
-app.get('/journey', [stepOne, stepTwo], (req, res) => {
+router.get('/journey', [stepOne, stepTwo], (req, res) => {
     res.json(res.locals)
 })
-```
-* return:
-```json
-{
-    "trail": "start-middle",
-    "count": 2
-}
-```
+
+export default router
