@@ -2,7 +2,7 @@ export default (req, res, next) => {
     try {
         const id = Math.floor(Math.random() * 9000) + 1000
         res.locals.requestId = id
-        const logData ={
+        const logData = {
             message: 'Incoming request',
             requestId: id
         };
