@@ -1,0 +1,33 @@
+[
+  {
+    "name": "Hilli",
+    "email": "sy@gmail.com",
+    "hash": "$2b$10$zZ1OdmwpOxSNkjWInwhPyuie.FNU4C2d9JxhVVZnij4h14auCdzrC",
+    "role": "librarian"
+  },
+  {
+    "name": "bibi",
+    "email": "sm@gmail.com",
+    "hash": "$2b$10$K9pAzOzSTBWXQE/EDkbtuOLoxhXAtqUYU4rGqVxyHywYGdlkqVSWu"
+  },
+  {
+    "name": "tami",
+    "email": "tl@gmail.com",
+    "hash": "$2b$10$vMzbUlMYBI8Hag.BbKrTaOMZSiCiL9fAwHS0bYoHk6TD0tc62wXEC"
+  },
+  {
+    "name": "jacob",
+    "email": "jh@gmail.com",
+    "hash": "$2b$10$bqOCyGaCiVCaqw3oMXvDl.hgumz72p3.1mbUWbnoWDgap.zJk0/Ka"
+  },
+  {
+    "name": "pini",
+    "email": "pm@gmail.com",
+    "hash": "$2b$10$S4mUcZb9KDhBuvZdOa1ARuQh3A.eTsFN39qzbsMYj2iDY4BAXDkz6"
+  },
+  {
+    "name": "shlomo",
+    "email": "shm@gmail.com",
+    "hash": "$2b$10$xrEkZR0Cm0VNWJ/vQ85LSeVT0BD40EFUQw3lGDszch5apWxpD/i1a"
+  }
+]
