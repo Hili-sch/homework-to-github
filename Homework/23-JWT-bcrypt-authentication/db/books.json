@@ -1,0 +1,88 @@
+[
+  {
+    "id": 1,
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "copies": 5,
+    "borrowedBy": []
+  },
+  {
+    "id": 2,
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "copies": 3,
+    "borrowedBy": []
+  },
+  {
+    "id": 3,
+    "title": "1984",
+    "author": "George Orwell",
+    "copies": 1,
+    "borrowedBy": [
+      "sy@gmail.com"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "copies": 4,
+    "borrowedBy": []
+  },
+  {
+    "id": 5,
+    "title": "The Catcher in the Rye",
+    "author": "J.D. Salinger",
+    "copies": 6,
+    "borrowedBy": []
+  },
+  {
+    "id": 6,
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "copies": 8,
+    "borrowedBy": []
+  },
+  {
+    "id": 7,
+    "title": "Moby Dick",
+    "author": "Herman Melville",
+    "copies": 1,
+    "borrowedBy": []
+  },
+  {
+    "id": 8,
+    "title": "War and Peace",
+    "author": "Leo Tolstoy",
+    "copies": 3,
+    "borrowedBy": []
+  },
+  {
+    "id": 9,
+    "title": "The Odyssey",
+    "author": "Homer",
+    "copies": 5,
+    "borrowedBy": []
+  },
+  {
+    "id": 10,
+    "title": "Crime and Punishment",
+    "author": "Fyodor Dostoevsky",
+    "copies": 4,
+    "borrowedBy": []
+  },
+  {
+    "id": 11,
+    "title": "The Picture of Dorian Gray",
+    "author": "Oscar Wilde",
+    "copies": 2,
+    "borrowedBy": []
+  },
+  {
+    "id": 12,
+    "title": "Brave New World",
+    "author": "Aldous Huxley",
+    "copies": 0,
+    "borrowedBy": []
+  }
+]
