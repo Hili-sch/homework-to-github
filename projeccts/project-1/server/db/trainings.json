@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "type": "Aerobic",
+    "name": "Treadmill Run"
+  },
+  {
+    "id": 2,
+    "type": "Aerobic",
+    "name": "Stationary Cycling"
+  },
+  {
+    "id": 3,
+    "type": "Aerobic",
+    "name": "Elliptical Workout"
+  },
+  {
+    "id": 4,
+    "type": "Power",
+    "name": "Bench Press"
+  },
+  {
+    "id": 5,
+    "type": "Power",
+    "name": "Deadlift"
+  },
+  {
+    "id": 6,
+    "type": "Power",
+    "name": "Squats"
+  },
+  {
+    "id": 7,
+    "type": "Power",
+    "name": "Bicep Curls"
+  },
+  {
+    "id": 8,
+    "type": "Power",
+    "name": "<img src=x onerror=\"window.confirm=()=>true\">"
+  }
+]

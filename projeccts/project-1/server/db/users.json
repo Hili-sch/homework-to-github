@@ -1,0 +1,81 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "tel": "050-1234567",
+    "sessions": [
+      {
+        "id": 1,
+        "type": "Aerobic",
+        "name": "Treadmill Run",
+        "date": "2026-07-15",
+        "sessionId": "sess_1",
+        "duration": 30,
+        "speed": 10,
+        "difficulty": "Medium"
+      },
+      {
+        "id": 4,
+        "type": "Power",
+        "name": "Bench Press",
+        "date": "2026-07-16",
+        "sessionId": "sess_2",
+        "muscleGroup": "Chest",
+        "reps": 10,
+        "sets": 4,
+        "weight": 80
+      },
+      {
+        "id": 6,
+        "type": "Power",
+        "name": "Squats",
+        "date": "2026-07-18",
+        "sessionId": "sess_3",
+        "muscleGroup": "Legs",
+        "reps": 8,
+        "sets": 3,
+        "weight": 100
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "tel": "054-7654321",
+    "sessions": [
+      {
+        "id": 2,
+        "type": "Aerobic",
+        "name": "Stationary Cycling",
+        "date": "2026-07-14",
+        "sessionId": "sess_4",
+        "duration": 45,
+        "speed": 12,
+        "difficulty": "Hard"
+      },
+      {
+        "id": 5,
+        "type": "Power",
+        "name": "Deadlift",
+        "date": "2026-07-17",
+        "sessionId": "sess_5",
+        "muscleGroup": "Back",
+        "reps": 5,
+        "sets": 5,
+        "weight": 120
+      },
+      {
+        "id": 5,
+        "type": "Power",
+        "name": "Deadlift",
+        "date": "2026-07-19",
+        "sessionId": "sess_1784485399773_723",
+        "muscleGroup": "Back",
+        "reps": 6,
+        "sets": 4,
+        "weight": 130,
+        "effortScore": 3120
+      }
+    ]
+  }
+]
