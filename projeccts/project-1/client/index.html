@@ -6,7 +6,7 @@
   <title>PulseFit // Premium Fitness Tracker Dashboard</title>
   <!-- SEO Meta Tags -->
   <meta name="description" content="Track your gym routines, compare Aerobic and Power session statistics, get AI-powered training insights, and manage workout schedules.">
-  <!-- Google Font: Outfit (Clean, premium geometric sans-serif) -->
+  <!-- Google Font: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,163 +19,284 @@
   <div class="ambient-glow glow-1" id="ambient-glow-1"></div>
   <div class="ambient-glow glow-2" id="ambient-glow-2"></div>
 
-  <!-- Header Section -->
-  <header class="app-header" id="app-header">
-    <div class="header-logo" id="header-logo">
-      <span class="logo-icon">⚡</span>
-      <h1 class="logo-text">Pulse<span class="highlight">Fit</span></h1>
-    </div>
-    
-    <div class="header-actions" id="header-actions">
-      <!-- Active User Switcher -->
-      <div class="user-select-container">
-        <label for="user-select" class="field-label-compact">Active User:</label>
-        <select id="user-select" class="select-input">
-          <option value="" disabled selected>Select User...</option>
-        </select>
+  <!-- AUTHENTICATION SCREEN OVERLAY (Shown by default, hidden when authenticated) -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card glass-card">
+      <div class="auth-header">
+        <span class="auth-logo-icon">⚡</span>
+        <h1 class="auth-logo-text">Pulse<span class="highlight">Fit</span></h1>
+        <p class="auth-subtitle" id="auth-subtitle-text">Sign in to track your gym progress</p>
       </div>
-      <!-- Add User Trigger -->
-      <button type="button" class="btn btn-secondary btn-icon-only" id="btn-show-add-user" title="Add New User">
-        <span>+ User</span>
-      </button>
+
+      <!-- Login Form -->
+      <form id="login-form" novalidate>
+        <div class="form-field">
+          <label for="login-username" class="field-label">Username / Telephone</label>
+          <input type="text" id="login-username" class="text-input" placeholder="e.g. Hilli Schlesinger or 052-7157412" required autocomplete="username">
+          <span class="error-msg" id="login-username-error"></span>
+        </div>
+        <div class="form-field">
+          <label for="login-password" class="field-label">Password</label>
+          <input type="password" id="login-password" class="text-input" placeholder="••••••••" required autocomplete="current-password">
+          <span class="error-msg" id="login-password-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full-width" id="btn-login-submit">Sign In</button>
+        
+        <p class="auth-toggle-text">
+          Don't have an account? <a href="#" id="link-show-register">Register here</a>
+        </p>
+      </form>
+
+      <!-- Register Form (Hidden by default) -->
+      <form id="register-form" class="hidden" novalidate>
+        <div class="form-field">
+          <label for="register-name" class="field-label">Full Name</label>
+          <input type="text" id="register-name" class="text-input" placeholder="e.g. John Doe" required autocomplete="name">
+          <span class="error-msg" id="register-name-error"></span>
+        </div>
+        <div class="form-field">
+          <label for="register-tel" class="field-label">Telephone Contact</label>
+          <input type="tel" id="register-tel" class="text-input" placeholder="e.g. 050-1234567" required autocomplete="tel">
+          <span class="error-msg" id="register-tel-error"></span>
+        </div>
+        <div class="form-field">
+          <label for="register-password" class="field-label">Password</label>
+          <input type="password" id="register-password" class="text-input" placeholder="Create password..." required autocomplete="new-password">
+          <span class="error-msg" id="register-password-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full-width" id="btn-register-submit">Create Account</button>
+        
+        <p class="auth-toggle-text">
+          Already have an account? <a href="#" id="link-show-login">Sign in instead</a>
+        </p>
+      </form>
     </div>
-  </header>
+  </div>
 
-  <!-- Main Grid Layout -->
-  <main class="dashboard-layout" id="dashboard-layout">
+  <!-- MAIN DASHBOARD CONTENT (Hidden until authenticated) -->
+  <div class="app-container hidden" id="app-container">
     
-    <!-- Sidebar: User Info and Exercise Catalog -->
-    <aside class="sidebar-panel glass-card" id="sidebar-panel">
-      <!-- Active User Profile Summary -->
-      <section class="sidebar-section" id="active-user-profile">
-        <h2 class="section-title">Current User</h2>
-        <div class="profile-card" id="profile-card">
-          <div class="profile-avatar" id="profile-avatar">👤</div>
-          <div class="profile-info">
-            <p class="profile-name" id="display-user-name">Select a user</p>
-            <p class="profile-tel" id="display-user-tel">-</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Exercise Catalog Manager -->
-      <section class="sidebar-section" id="exercise-catalog-section">
-        <h2 class="section-title">Exercise Catalog</h2>
-        <ul class="catalog-list" id="catalog-list">
-          <!-- Catalog items will be injected here -->
-        </ul>
-        
-        <!-- Add Exercise to Catalog Form -->
-        <form id="add-catalog-form" class="compact-form">
-          <h3 class="form-subtitle">Add Exercise to Catalog</h3>
-          <div class="form-group-row">
-            <div class="input-wrapper">
-              <input type="text" id="catalog-exercise-name" placeholder="Exercise Name..." class="text-input" required>
-              <span class="error-msg" id="catalog-name-error"></span>
-            </div>
-            <select id="catalog-exercise-type" class="select-input" required>
-              <option value="Power">Power</option>
-              <option value="Aerobic">Aerobic</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary btn-full-width" id="btn-add-catalog">Add to Catalog</button>
-        </form>
-      </section>
-    </aside>
-
-    <!-- Content Workspace -->
-    <div class="workspace-area" id="workspace-area">
+    <!-- Header Section -->
+    <header class="app-header" id="app-header">
+      <div class="header-logo" id="header-logo">
+        <span class="logo-icon">⚡</span>
+        <h1 class="logo-text">Pulse<span class="highlight">Fit</span></h1>
+      </div>
       
-      <!-- Stats Summary Cards (CSS Grid) -->
-      <section class="stats-grid" id="stats-grid">
-        <!-- Card 1: Total Users -->
-        <div class="stats-card glass-card" id="stat-total-users-card">
-          <div class="stat-icon icon-users">👥</div>
-          <div class="stat-content">
-            <h3 class="stat-label">Total Users</h3>
-            <p class="stat-number" id="stat-total-users">0</p>
-          </div>
+      <div class="header-actions" id="header-actions">
+        <!-- Active User Switcher (Role Restricted - Hidden for regular users) -->
+        <div class="user-select-container" id="user-select-container">
+          <label for="user-select" class="field-label-compact">View User:</label>
+          <select id="user-select" class="select-input">
+            <option value="" disabled selected>Select User...</option>
+          </select>
         </div>
-        <!-- Card 2: Max Weight Lifted -->
-        <div class="stats-card glass-card" id="stat-max-weight-card">
-          <div class="stat-icon icon-weight">🏋️</div>
-          <div class="stat-content">
-            <h3 class="stat-label">Max Weight Lifted</h3>
-            <p class="stat-number" id="stat-max-weight">0 <span class="unit">kg</span></p>
-          </div>
-        </div>
-        <!-- Card 3: Avg Aerobic Time -->
-        <div class="stats-card glass-card" id="stat-avg-time-card">
-          <div class="stat-icon icon-timer">⏱️</div>
-          <div class="stat-content">
-            <h3 class="stat-label">Avg Aerobic Duration</h3>
-            <p class="stat-number" id="stat-avg-aerobic-time">0 <span class="unit">min</span></p>
-          </div>
-        </div>
-        <!-- Card 4: Total Power Workouts -->
-        <div class="stats-card glass-card" id="stat-total-power-card">
-          <div class="stat-icon icon-power">🔥</div>
-          <div class="stat-content">
-            <h3 class="stat-label">Power Workouts</h3>
-            <p class="stat-number" id="stat-total-power">0</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Sub-Workspace Grid (Add form on left, Workouts List on right) -->
-      <div class="sub-workspace-grid" id="sub-workspace-grid">
         
-        <!-- Column 1: Add Workout Session Form -->
-        <section class="form-column glass-card" id="add-workout-section">
-          <h2 class="section-title">Log Workout Session</h2>
-          <form id="workout-session-form" novalidate>
-            <!-- Select Exercise from Catalog -->
-            <div class="form-field">
-              <label for="session-exercise-select" class="field-label">Select Exercise</label>
-              <select id="session-exercise-select" class="select-input" required>
-                <option value="" disabled selected>Choose from catalog...</option>
+        <!-- Add User Trigger (Role Restricted - Hidden for regular users) -->
+        <button type="button" class="btn btn-secondary btn-icon-only" id="btn-show-add-user" title="Create User Profile">
+          <span>+ Register User</span>
+        </button>
+
+        <!-- Log Out Trigger -->
+        <button type="button" class="btn btn-danger btn-icon-only" id="btn-logout" title="Log Out">
+          <span>Logout 🔓</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <main class="dashboard-layout" id="dashboard-layout">
+      
+      <!-- Sidebar: User Info and Exercise Catalog -->
+      <aside class="sidebar-panel glass-card" id="sidebar-panel">
+        <!-- Active User Profile Summary -->
+        <section class="sidebar-section" id="active-user-profile">
+          <h2 class="section-title">Current Profile</h2>
+          <div class="profile-card" id="profile-card">
+            <div class="profile-avatar" id="profile-avatar">👤</div>
+            <div class="profile-info">
+              <p class="profile-name" id="display-user-name">Loading...</p>
+              <p class="profile-tel" id="display-user-tel">-</p>
+              <span class="badge-role" id="display-user-role">-</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Exercise Catalog Manager -->
+        <section class="sidebar-section" id="exercise-catalog-section">
+          <h2 class="section-title">Exercise Catalog</h2>
+          <ul class="catalog-list" id="catalog-list">
+            <!-- Catalog items will be injected here -->
+          </ul>
+          
+          <!-- Add Exercise to Catalog Form (Role Restricted - Hidden for regular users) -->
+          <form id="add-catalog-form" class="compact-form">
+            <h3 class="form-subtitle">Add Catalog Exercise</h3>
+            <div class="form-group-row">
+              <div class="input-wrapper">
+                <input type="text" id="catalog-exercise-name" placeholder="Name..." class="text-input" required>
+                <span class="error-msg" id="catalog-name-error"></span>
+              </div>
+              <select id="catalog-exercise-type" class="select-input" required>
+                <option value="Power">Power</option>
+                <option value="Aerobic">Aerobic</option>
               </select>
-              <span class="error-msg" id="session-exercise-error"></span>
             </div>
+            <button type="submit" class="btn btn-primary btn-full-width" id="btn-add-catalog">Add to Catalog</button>
+          </form>
+        </section>
+      </aside>
 
-            <!-- Date (Common Field) -->
-            <div class="form-field">
-              <label for="session-date" class="field-label">Workout Date</label>
-              <input type="date" id="session-date" class="date-input" required>
-              <span class="error-msg" id="session-date-error"></span>
+      <!-- Content Workspace -->
+      <div class="workspace-area" id="workspace-area">
+        
+        <!-- Stats Summary Cards (CSS Grid) -->
+        <section class="stats-grid" id="stats-grid">
+          <!-- Card 1: Total Users -->
+          <div class="stats-card glass-card" id="stat-total-users-card">
+            <div class="stat-icon icon-users">👥</div>
+            <div class="stat-content">
+              <h3 class="stat-label">Total Users</h3>
+              <p class="stat-number" id="stat-total-users">0</p>
             </div>
+          </div>
+          <!-- Card 2: Max Weight Lifted -->
+          <div class="stats-card glass-card" id="stat-max-weight-card">
+            <div class="stat-icon icon-weight">🏋️</div>
+            <div class="stat-content">
+              <h3 class="stat-label">Max Weight Lifted</h3>
+              <p class="stat-number" id="stat-max-weight">0 <span class="unit">kg</span></p>
+            </div>
+          </div>
+          <!-- Card 3: Avg Aerobic Calories burned -->
+          <div class="stats-card glass-card" id="stat-avg-time-card">
+            <div class="stat-icon icon-timer">🏃</div>
+            <div class="stat-content">
+              <h3 class="stat-label">Avg Cardio Time</h3>
+              <p class="stat-number" id="stat-avg-aerobic-time">0 <span class="unit">min</span></p>
+            </div>
+          </div>
+          <!-- Card 4: Total Power Workouts -->
+          <div class="stats-card glass-card" id="stat-total-power-card">
+            <div class="stat-icon icon-power">🔥</div>
+            <div class="stat-content">
+              <h3 class="stat-label">Power Workouts</h3>
+              <p class="stat-number" id="stat-total-power">0</p>
+            </div>
+          </div>
+        </section>
 
-            <!-- DYNAMIC FIELDS FOR AEROBIC -->
-            <div id="dynamic-aerobic-fields" class="dynamic-form-fields hidden">
-              <div class="form-row">
-                <div class="form-field">
-                  <label for="aerobic-duration" class="field-label">Duration (Minutes)</label>
-                  <input type="number" id="aerobic-duration" placeholder="e.g. 30" class="number-input">
-                  <span class="error-msg" id="aerobic-duration-error"></span>
-                </div>
-                <div class="form-field">
-                  <label for="aerobic-speed" class="field-label">Speed (km/h)</label>
-                  <input type="number" id="aerobic-speed" step="0.1" placeholder="e.g. 10.5" class="number-input">
-                  <span class="error-msg" id="aerobic-speed-error"></span>
-                </div>
-              </div>
+        <!-- Sub-Workspace Grid (Add form on left, Workouts List on right) -->
+        <div class="sub-workspace-grid" id="sub-workspace-grid">
+          
+          <!-- Column 1: Add Workout Session Form -->
+          <section class="form-column glass-card" id="add-workout-section">
+            <h2 class="section-title">Log Workout Session</h2>
+            <form id="workout-session-form" novalidate>
+              <!-- Select Exercise from Catalog -->
               <div class="form-field">
-                <label for="aerobic-difficulty" class="field-label">Difficulty</label>
-                <select id="aerobic-difficulty" class="select-input">
-                  <option value="Easy">Easy</option>
-                  <option value="Medium" selected>Medium</option>
-                  <option value="Hard">Hard</option>
+                <label for="session-exercise-select" class="field-label">Select Exercise</label>
+                <select id="session-exercise-select" class="select-input" required>
+                  <option value="" disabled selected>Choose from catalog...</option>
                 </select>
-                <span class="error-msg" id="aerobic-difficulty-error"></span>
+                <span class="error-msg" id="session-exercise-error"></span>
               </div>
-            </div>
 
-            <!-- DYNAMIC FIELDS FOR POWER -->
-            <div id="dynamic-power-fields" class="dynamic-form-fields hidden">
-              <div class="form-row">
+              <!-- Date (Common Field) -->
+              <div class="form-field">
+                <label for="session-date" class="field-label">Workout Date</label>
+                <input type="date" id="session-date" class="date-input" required>
+                <span class="error-msg" id="session-date-error"></span>
+              </div>
+
+              <!-- DYNAMIC FIELDS FOR AEROBIC -->
+              <div id="dynamic-aerobic-fields" class="dynamic-form-fields hidden">
+                <div class="form-row">
+                  <div class="form-field">
+                    <label for="aerobic-duration" class="field-label">Duration (Minutes)</label>
+                    <input type="number" id="aerobic-duration" placeholder="e.g. 30" class="number-input">
+                    <span class="error-msg" id="aerobic-duration-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="aerobic-speed" class="field-label">Speed (km/h)</label>
+                    <input type="number" id="aerobic-speed" step="0.1" placeholder="e.g. 10.5" class="number-input">
+                    <span class="error-msg" id="aerobic-speed-error"></span>
+                  </div>
+                </div>
                 <div class="form-field">
-                  <label for="power-muscle-group" class="field-label">Muscle Group</label>
-                  <select id="power-muscle-group" class="select-input">
+                  <label for="aerobic-difficulty" class="field-label">Difficulty</label>
+                  <select id="aerobic-difficulty" class="select-input">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                  <span class="error-msg" id="aerobic-difficulty-error"></span>
+                </div>
+              </div>
+
+              <!-- DYNAMIC FIELDS FOR POWER -->
+              <div id="dynamic-power-fields" class="dynamic-form-fields hidden">
+                <div class="form-row">
+                  <div class="form-field">
+                    <label for="power-muscle-group" class="field-label">Muscle Group</label>
+                    <select id="power-muscle-group" class="select-input">
+                      <option value="Chest">Chest</option>
+                      <option value="Back">Back</option>
+                      <option value="Legs">Legs</option>
+                      <option value="Shoulders">Shoulders</option>
+                      <option value="Arms">Arms</option>
+                      <option value="Core">Core</option>
+                    </select>
+                    <span class="error-msg" id="power-muscle-group-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="power-weight" class="field-label">Weight (kg)</label>
+                    <input type="number" id="power-weight" placeholder="e.g. 60" class="number-input">
+                    <span class="error-msg" id="power-weight-error"></span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-field">
+                    <label for="power-sets" class="field-label">Sets</label>
+                    <input type="number" id="power-sets" placeholder="e.g. 4" class="number-input">
+                    <span class="error-msg" id="power-sets-error"></span>
+                  </div>
+                  <div class="form-field">
+                    <label for="power-reps" class="field-label">Reps per Set</label>
+                    <input type="number" id="power-reps" placeholder="e.g. 10" class="number-input">
+                    <span class="error-msg" id="power-reps-error"></span>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full-width" id="btn-submit-session">Log Workout Session</button>
+            </form>
+          </section>
+
+          <!-- Column 2: Filter, Search, Sort & Logged Workout Cards -->
+          <section class="workouts-column" id="workouts-list-section">
+            <!-- Search & Filter Controls -->
+            <div class="controls-panel glass-card" id="controls-panel">
+              <div class="search-bar-row">
+                <input type="text" id="search-input" placeholder="Search workouts by name..." class="text-input search-input">
+              </div>
+              
+              <div class="filters-row">
+                <!-- Filter by Type -->
+                <div class="control-group">
+                  <label for="filter-type" class="field-label-compact">Type:</label>
+                  <select id="filter-type" class="select-input">
+                    <option value="All">All Types</option>
+                    <option value="Power">Power Only</option>
+                    <option value="Aerobic">Aerobic Only</option>
+                  </select>
+                </div>
+                
+                <!-- Filter by Muscle Group -->
+                <div class="control-group">
+                  <label for="filter-muscle" class="field-label-compact">Muscle:</label>
+                  <select id="filter-muscle" class="select-input">
+                    <option value="All">All Muscles</option>
                     <option value="Chest">Chest</option>
                     <option value="Back">Back</option>
                     <option value="Legs">Legs</option>
@@ -183,56 +304,134 @@
                     <option value="Arms">Arms</option>
                     <option value="Core">Core</option>
                   </select>
-                  <span class="error-msg" id="power-muscle-group-error"></span>
                 </div>
-                <div class="form-field">
-                  <label for="power-weight" class="field-label">Weight (kg)</label>
-                  <input type="number" id="power-weight" placeholder="e.g. 60" class="number-input">
-                  <span class="error-msg" id="power-weight-error"></span>
+
+                <!-- Sorting Criteria -->
+                <div class="control-group">
+                  <label for="sort-by" class="field-label-compact">Sort By:</label>
+                  <select id="sort-by" class="select-input">
+                    <option value="date">Date</option>
+                    <option value="name">Name</option>
+                    <option value="effortScore">Calorie Burn / Effort</option>
+                  </select>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-field">
-                  <label for="power-sets" class="field-label">Sets</label>
-                  <input type="number" id="power-sets" placeholder="e.g. 4" class="number-input">
-                  <span class="error-msg" id="power-sets-error"></span>
-                </div>
-                <div class="form-field">
-                  <label for="power-reps" class="field-label">Reps per Set</label>
-                  <input type="number" id="power-reps" placeholder="e.g. 10" class="number-input">
-                  <span class="error-msg" id="power-reps-error"></span>
-                </div>
+
+                <!-- Sort Order Toggle -->
+                <button type="button" class="btn btn-secondary btn-toggle" id="btn-toggle-sort-order" data-order="desc">
+                  <span>Desc ↓</span>
+                </button>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-full-width" id="btn-submit-session">Log Workout Session</button>
-          </form>
+            <!-- Session List Cards Container -->
+            <div class="sessions-container" id="sessions-container">
+              <!-- Dynamic workout session cards will be generated here -->
+              <div class="no-sessions-placeholder" id="no-sessions-placeholder">
+                <p>No logged sessions matching active filters. Add a workout to get started!</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- AI-Powered Smart Insights Panel -->
+        <section class="insights-panel glass-card" id="insights-panel">
+          <h2 class="section-title flex-title">
+            <span>🧠 Performance Insights</span>
+            <span class="insights-badge">Calculated Live</span>
+          </h2>
+          <div class="insights-grid" id="insights-grid">
+            <!-- 4 Insights sentences will be injected here -->
+          </div>
         </section>
 
-        <!-- Column 2: Filter, Search, Sort & Logged Workout Cards -->
-        <section class="workouts-column" id="workouts-list-section">
-          <!-- Search & Filter Controls -->
-          <div class="controls-panel glass-card" id="controls-panel">
-            <div class="search-bar-row">
-              <input type="text" id="search-input" placeholder="Search workouts by name..." class="text-input search-input">
-            </div>
-            
-            <div class="filters-row">
-              <!-- Filter by Type -->
-              <div class="control-group">
-                <label for="filter-type" class="field-label-compact">Type:</label>
-                <select id="filter-type" class="select-input">
-                  <option value="All">All Types</option>
-                  <option value="Power">Power Only</option>
-                  <option value="Aerobic">Aerobic Only</option>
-                </select>
+      </div>
+    </main>
+
+    <!-- Create User Modal (Role Restricted - Hidden by default) -->
+    <div class="modal-overlay hidden" id="add-user-modal">
+      <div class="modal-card glass-card">
+        <h2 class="modal-title">Register User Profile</h2>
+        <form id="add-user-form" novalidate>
+          <div class="form-field">
+            <label for="new-user-name" class="field-label">Full Name</label>
+            <input type="text" id="new-user-name" class="text-input" placeholder="e.g. John Doe" required>
+            <span class="error-msg" id="new-user-name-error"></span>
+          </div>
+          <div class="form-field">
+            <label for="new-user-tel" class="field-label">Telephone Contact</label>
+            <input type="tel" id="new-user-tel" class="text-input" placeholder="e.g. 050-1234567" required>
+            <span class="error-msg" id="new-user-tel-error"></span>
+          </div>
+          <div class="form-field">
+            <label for="new-user-password" class="field-label">Initial Password</label>
+            <input type="password" id="new-user-password" class="text-input" placeholder="Initial password..." required>
+            <span class="error-msg" id="new-user-password-error"></span>
+          </div>
+          <div class="form-field" id="new-user-role-field">
+            <label for="new-user-role" class="field-label">System Role</label>
+            <select id="new-user-role" class="select-input">
+              <option value="user" selected>Regular User</option>
+              <option value="admin">Staff Admin</option>
+            </select>
+            <span class="error-msg" id="new-user-role-error"></span>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-add-user">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-user">Create User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Session Modal (Hidden by default) -->
+    <div class="modal-overlay hidden" id="edit-session-modal">
+      <div class="modal-card glass-card">
+        <h2 class="modal-title">Edit Workout Session</h2>
+        <form id="edit-session-form" novalidate>
+          <!-- Read-only Exercise Name -->
+          <div class="form-field">
+            <label class="field-label">Exercise</label>
+            <input type="text" id="edit-session-name" class="text-input input-readonly" readonly>
+          </div>
+
+          <!-- Date -->
+          <div class="form-field">
+            <label for="edit-session-date" class="field-label">Date</label>
+            <input type="date" id="edit-session-date" class="date-input" required>
+            <span class="error-msg" id="edit-session-date-error"></span>
+          </div>
+
+          <!-- DYNAMIC EDIT FIELDS FOR AEROBIC -->
+          <div id="edit-aerobic-fields" class="dynamic-form-fields hidden">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="edit-aerobic-duration" class="field-label">Duration (Minutes)</label>
+                <input type="number" id="edit-aerobic-duration" class="number-input">
+                <span class="error-msg" id="edit-aerobic-duration-error"></span>
               </div>
-              
-              <!-- Filter by Muscle Group -->
-              <div class="control-group">
-                <label for="filter-muscle" class="field-label-compact">Muscle:</label>
-                <select id="filter-muscle" class="select-input">
-                  <option value="All">All Muscles</option>
+              <div class="form-field">
+                <label for="edit-aerobic-speed" class="field-label">Speed (km/h)</label>
+                <input type="number" id="edit-aerobic-speed" step="0.1" class="number-input">
+                <span class="error-msg" id="edit-aerobic-speed-error"></span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="edit-aerobic-difficulty" class="field-label">Difficulty</label>
+              <select id="edit-aerobic-difficulty" class="select-input">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+              <span class="error-msg" id="edit-aerobic-difficulty-error"></span>
+            </div>
+          </div>
+
+          <!-- DYNAMIC EDIT FIELDS FOR POWER -->
+          <div id="edit-power-fields" class="dynamic-form-fields hidden">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="edit-power-muscle-group" class="field-label">Muscle Group</label>
+                <select id="edit-power-muscle-group" class="select-input">
                   <option value="Chest">Chest</option>
                   <option value="Back">Back</option>
                   <option value="Legs">Legs</option>
@@ -240,161 +439,41 @@
                   <option value="Arms">Arms</option>
                   <option value="Core">Core</option>
                 </select>
+                <span class="error-msg" id="edit-power-muscle-group-error"></span>
               </div>
-
-              <!-- Sorting Criteria -->
-              <div class="control-group">
-                <label for="sort-by" class="field-label-compact">Sort By:</label>
-                <select id="sort-by" class="select-input">
-                  <option value="date">Date</option>
-                  <option value="name">Name</option>
-                  <option value="effortScore">Effort Score</option>
-                </select>
+              <div class="form-field">
+                <label for="edit-power-weight" class="field-label">Weight (kg)</label>
+                <input type="number" id="edit-power-weight" class="number-input">
+                <span class="error-msg" id="edit-power-weight-error"></span>
               </div>
-
-              <!-- Sort Order Toggle -->
-              <button type="button" class="btn btn-secondary btn-toggle" id="btn-toggle-sort-order" data-order="desc">
-                <span>Desc ↓</span>
-              </button>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="edit-power-sets" class="field-label">Sets</label>
+                <input type="number" id="edit-power-sets" class="number-input">
+                <span class="error-msg" id="edit-power-sets-error"></span>
+              </div>
+              <div class="form-field">
+                <label for="edit-power-reps" class="field-label">Reps per Set</label>
+                <input type="number" id="edit-power-reps" class="number-input">
+                <span class="error-msg" id="edit-power-reps-error"></span>
+              </div>
             </div>
           </div>
 
-          <!-- Session List Cards Container -->
-          <div class="sessions-container" id="sessions-container">
-            <!-- Dynamic workout session cards will be generated here -->
-            <div class="no-sessions-placeholder" id="no-sessions-placeholder">
-              <p>No logged sessions matching active filters. Add a workout to get started!</p>
-            </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-edit-session">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-session">Save Changes</button>
           </div>
-        </section>
+        </form>
       </div>
-
-      <!-- AI-Powered Smart Insights Panel -->
-      <section class="insights-panel glass-card" id="insights-panel">
-        <h2 class="section-title flex-title">
-          <span>🧠 Performance Insights</span>
-          <span class="insights-badge">Calculated Live</span>
-        </h2>
-        <div class="insights-grid" id="insights-grid">
-          <!-- 4 Insights sentences will be injected here -->
-        </div>
-      </section>
-
     </div>
-  </main>
 
-  <!-- Create User Modal (Hidden by default) -->
-  <div class="modal-overlay hidden" id="add-user-modal">
-    <div class="modal-card glass-card">
-      <h2 class="modal-title">Create User Profile</h2>
-      <form id="add-user-form" novalidate>
-        <div class="form-field">
-          <label for="new-user-name" class="field-label">Full Name</label>
-          <input type="text" id="new-user-name" class="text-input" placeholder="e.g. John Doe" required>
-          <span class="error-msg" id="new-user-name-error"></span>
-        </div>
-        <div class="form-field">
-          <label for="new-user-tel" class="field-label">Telephone / Contact</label>
-          <input type="tel" id="new-user-tel" class="text-input" placeholder="e.g. 050-1234567" required>
-          <span class="error-msg" id="new-user-tel-error"></span>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-add-user">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-save-user">Create User</button>
-        </div>
-      </form>
-    </div>
+    <footer class="app-footer" id="app-footer">
+      <p>&copy; 2026 PulseFit Systems. Designed for peak human performance. No local storage, fully synchronized.</p>
+    </footer>
+
   </div>
-
-  <!-- Edit Session Modal (Hidden by default) -->
-  <div class="modal-overlay hidden" id="edit-session-modal">
-    <div class="modal-card glass-card">
-      <h2 class="modal-title">Edit Workout Session</h2>
-      <form id="edit-session-form" novalidate>
-        <!-- Read-only Exercise Name -->
-        <div class="form-field">
-          <label class="field-label">Exercise</label>
-          <input type="text" id="edit-session-name" class="text-input input-readonly" readonly>
-        </div>
-
-        <!-- Date -->
-        <div class="form-field">
-          <label for="edit-session-date" class="field-label">Date</label>
-          <input type="date" id="edit-session-date" class="date-input" required>
-          <span class="error-msg" id="edit-session-date-error"></span>
-        </div>
-
-        <!-- DYNAMIC EDIT FIELDS FOR AEROBIC -->
-        <div id="edit-aerobic-fields" class="dynamic-form-fields hidden">
-          <div class="form-row">
-            <div class="form-field">
-              <label for="edit-aerobic-duration" class="field-label">Duration (Minutes)</label>
-              <input type="number" id="edit-aerobic-duration" class="number-input">
-              <span class="error-msg" id="edit-aerobic-duration-error"></span>
-            </div>
-            <div class="form-field">
-              <label for="edit-aerobic-speed" class="field-label">Speed (km/h)</label>
-              <input type="number" id="edit-aerobic-speed" step="0.1" class="number-input">
-              <span class="error-msg" id="edit-aerobic-speed-error"></span>
-            </div>
-          </div>
-          <div class="form-field">
-            <label for="edit-aerobic-difficulty" class="field-label">Difficulty</label>
-            <select id="edit-aerobic-difficulty" class="select-input">
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-            <span class="error-msg" id="edit-aerobic-difficulty-error"></span>
-          </div>
-        </div>
-
-        <!-- DYNAMIC EDIT FIELDS FOR POWER -->
-        <div id="edit-power-fields" class="dynamic-form-fields hidden">
-          <div class="form-row">
-            <div class="form-field">
-              <label for="edit-power-muscle-group" class="field-label">Muscle Group</label>
-              <select id="edit-power-muscle-group" class="select-input">
-                <option value="Chest">Chest</option>
-                <option value="Back">Back</option>
-                <option value="Legs">Legs</option>
-                <option value="Shoulders">Shoulders</option>
-                <option value="Arms">Arms</option>
-                <option value="Core">Core</option>
-              </select>
-              <span class="error-msg" id="edit-power-muscle-group-error"></span>
-            </div>
-            <div class="form-field">
-              <label for="edit-power-weight" class="field-label">Weight (kg)</label>
-              <input type="number" id="edit-power-weight" class="number-input">
-              <span class="error-msg" id="edit-power-weight-error"></span>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="edit-power-sets" class="field-label">Sets</label>
-              <input type="number" id="edit-power-sets" class="number-input">
-              <span class="error-msg" id="edit-power-sets-error"></span>
-            </div>
-            <div class="form-field">
-              <label for="edit-power-reps" class="field-label">Reps per Set</label>
-              <input type="number" id="edit-power-reps" class="number-input">
-              <span class="error-msg" id="edit-power-reps-error"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn btn-secondary" id="btn-cancel-edit-session">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-save-session">Save Changes</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <footer class="app-footer" id="app-footer">
-    <p>&copy; 2026 PulseFit Systems. Designed for peak human performance. No local storage, fully synchronized.</p>
-  </footer>
 
   <!-- Local Script File -->
   <script src="script.js"></script>

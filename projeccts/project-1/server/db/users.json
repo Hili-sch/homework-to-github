@@ -3,6 +3,8 @@
     "id": 1,
     "name": "John Doe",
     "tel": "050-1234567",
+    "role": "user",
+    "password": "$2b$10$UuZ/SUhFHLd50iIHYetQW.KvRMwWFQZ7I/G05gTj9LN/7kOtEOOy6",
     "sessions": [
       {
         "id": 1,
@@ -42,6 +44,8 @@
     "id": 2,
     "name": "Jane Smith",
     "tel": "054-7654321",
+    "role": "user",
+    "password": "$2b$10$5.m3NKtDM3xS.gD6cTbwg.ai/LO7zhvJgf/8FL0TDt/SloFf8XzLm",
     "sessions": [
       {
         "id": 2,
@@ -63,19 +67,23 @@
         "reps": 5,
         "sets": 5,
         "weight": 120
-      },
-      {
-        "id": 5,
-        "type": "Power",
-        "name": "Deadlift",
-        "date": "2026-07-19",
-        "sessionId": "sess_1784485399773_723",
-        "muscleGroup": "Back",
-        "reps": 6,
-        "sets": 4,
-        "weight": 130,
-        "effortScore": 3120
       }
     ]
+  },
+  {
+    "id": 3,
+    "name": "Hilli Schlesinger",
+    "tel": "052-7157412",
+    "role": "superadmin",
+    "password": "$2b$10$nxaML5Ozjd8rEx4k/7d2/.zUlWKLgKxyjHG5DsVj.lprJ6394OW6O",
+    "sessions": []
+  },
+  {
+    "id": 4,
+    "name": "Staff Admin",
+    "tel": "054-9999999",
+    "role": "admin",
+    "password": "$2b$10$wbZz8bvWIUkmm9JsldJloeFt6nTJsIlPgXzePd.9N1a4BOR9ErNJS",
+    "sessions": []
   }
 ]

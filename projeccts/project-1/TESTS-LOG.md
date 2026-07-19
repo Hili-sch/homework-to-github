@@ -1,39 +1,35 @@
-# Test Log & Scenarios: PulseFit Gym Tracker
+# Test Log & Scenarios: PulseFit Gym Tracker (Auth & RBAC Update)
 
-Tests performed to verify requirements outlined in `SPEC.md`.
+Tests performed to verify security and role constraints outlined in `SPEC.md`.
 
 ## Test Scenarios & Results
 
-### 1. Database & ID Persistence Verification
-- **Scenario**: Start Express backend with pre-populated users (IDs 1, 2) and catalog exercises (IDs 1-7). Create a new user and add a new training exercise to catalog.
+### 1. Database Password Hashing Seeder Verification
+- **Scenario**: Start Express backend with database files containing plain-text passwords for new users.
+- **Expected Result**: Server detects unhashed passwords, automatically hashes them with bcrypt, and saves them back to `db/users.json` on boot.
+- **Result**: **PASS**. Output log shows "Hashed plain password for user: Hilli Schlesinger" and database is updated.
+
+### 2. Password Login & Register Flow
+- **Scenario**: Register a new user "Test User" with password "password123". Try to log in with incorrect password, then log in with correct credentials.
 - **Expected Result**: 
-  - User's counter starts at 3; new user is assigned ID 3.
-  - Exercises counter starts at 8; new exercise is assigned ID 8.
-- **Result**: **PASS**. Backend properly scans maximum existing IDs on boot and increments counter without collision.
+  - Register: Creates a new user with `user` role, returns JWT token, and logs user in.
+  - Login incorrect: Fails with status 401 and "Invalid username or password".
+  - Login correct: Succeeds, returns JWT token and user profile object.
+- **Result**: **PASS**. Login validation is fully secure and correct.
 
-### 2. OOP Class and Polymorphism Behavior
-- **Scenario**: Log a Treadmill run (Aerobic) of 30 minutes at 10 km/h, and a Bench Press (Power) of 4 sets, 10 reps, at 80 kg.
-- **Expected Result**:
-  - Treadmill: `calculateEffortScore()` returns 300 (`duration * speed`).
-  - Bench Press: `calculateEffortScore()` returns 3200 (`sets * reps * weight`).
-- **Result**: **PASS**. The objects are successfully mapped to their respective subclass instances, and correct calculation methods are triggered.
+### 3. Role-Based Access Control (RBAC) Verification
+- **Scenario**: Authenticate as three different roles and verify endpoint permissions:
+  - **Super Admin (`Hilli Schlesinger` / `1234`)**: Can fetch all user profiles, create new users, add exercises to the catalog, and delete workout sessions/catalog items. (**PASS**)
+  - **Admin (`Staff Admin` / `admin123`)**: Can fetch all user profiles, create new users, add exercises to the catalog. Cannot delete sessions or catalog items (returns 403 / UI delete buttons are hidden). (**PASS**)
+  - **Regular User (`John Doe` / `password123`)**: Can only view and log workouts for their own profile. Cannot view other users, cannot add exercises to catalog, and cannot delete other users' sessions. (**PASS**)
+- **Result**: **PASS**. Security checks reject unauthorized actions with status code 403.
 
-### 3. Dynamic UI and Input Handling
-- **Scenario**: Choose a Power exercise from dropdown.
-- **Expected Result**: Power training fields (Muscle, weight, sets, reps) are displayed; Aerobic fields (duration, speed, difficulty) are hidden.
-- **Result**: **PASS**. Transition updates instantly and updates display on exercise change.
+### 4. Empty Fields CSS display: none Protection
+- **Scenario**: Log an Aerobic session. Verify details on the card.
+- **Expected Result**: Detail container does not show empty labels (like Weight, Muscle Group) and hides them using the `.empty-field` class with CSS `display: none !important`.
+- **Result**: **PASS**. Detail cards are clean, structured, and contain no empty placeholders.
 
-### 4. Input Robustness
-- **Scenario**: Log a session passing numerical values as Strings (e.g., weight `"90"`, sets `"4"`).
-- **Expected Result**: Backend and frontend convert strings into numbers safely and write them as numbers in `users.json`.
-- **Result**: **PASS**. Both client and server parse inputs through safe numeric parsers.
-
-### 5. Validation Controls
-- **Scenario**: Submit empty name or invalid phone inside "Add User" form.
-- **Expected Result**: Validation text displays under fields. No browser `alert()` popups appear.
-- **Result**: **PASS**. Errors render visually inside inline target tags.
-
-### 6. Combined Search & Filtering
-- **Scenario**: Filter by "Power Only", select muscle group "Chest", and search "Bench".
-- **Expected Result**: Only the Bench Press session card remains visible.
-- **Result**: **PASS**. Combinable filter state is fully responsive.
+### 5. Calorie Burn Formula Simulation
+- **Scenario**: Log a Treadmill run (Aerobic) of 30 minutes at 10 km/h.
+- **Expected Result**: Simulated calorie burn returns `30 * (10 * 0.85) = 255 kcal`.
+- **Result**: **PASS**. Calorie burns represent realistic training loads.

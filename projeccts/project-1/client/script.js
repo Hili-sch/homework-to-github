@@ -1,12 +1,13 @@
 /**
- * PulseFit Fitness Tracker - Client Logic
+ * PulseFit Fitness Tracker - Secure Client Logic
  * 
  * Contains:
- * 1. ES6 Class definitions replicating backend OOP models.
- * 2. Application state variables.
- * 3. Form validation, dynamic form fields, and modal triggers.
- * 4. API communication functions to query and persist changes on the Express server.
- * 5. Data filtering, sorting, stats calculation, and AI-like Insights generation using JS array methods.
+ * 1. ES6 class definitions (polymorphic calorie burn effort scoring).
+ * 2. Token-based state management (runtime token storage).
+ * 3. Role-Based Access Control (RBAC) UI adaptation logic.
+ * 4. Forms triggers, inline validations, and HTTP authorization headers.
+ * 5. Data operations (combined filtering, sorting, statistics, insights).
+ * 6. Element visibility guards using CSS display none rules.
  */
 
 // API Base URL
@@ -33,10 +34,11 @@ function safeParseNumeric(value) {
  */
 class User {
   static idCounter = 1;
-  constructor(id, name, tel, sessions = []) {
+  constructor(id, name, tel, role = 'user', sessions = []) {
     this.id = id ? safeParseNumeric(id) : User.idCounter++;
     this.name = name;
     this.tel = tel;
+    this.role = role;
     this.sessions = sessions.map(s => mapSession(s));
   }
 }
@@ -66,6 +68,7 @@ class BaseSession extends BaseTraining {
 
 /**
  * Aerobic Session Subclass
+ * Simulates calorie burn: duration * speed * 0.85
  */
 class AerobicSession extends BaseSession {
   constructor(id, type, name, date, duration, speed, difficulty, sessionId = null) {
@@ -76,11 +79,11 @@ class AerobicSession extends BaseSession {
   }
 
   /**
-   * Calculates aerobic effort score.
-   * Effort = duration (mins) * speed (km/h)
+   * Calculates aerobic calorie burn.
+   * Calorie Burn = duration (mins) * (speed (km/h) * 0.85)
    */
   calculateEffortScore() {
-    return this.duration * this.speed;
+    return this.duration * (this.speed * 0.85);
   }
 }
 
@@ -121,16 +124,19 @@ function mapSession(s) {
  * APPLICATION STATE MANAGEMENT
  */
 const AppState = {
-  users: [],             // List of all User objects
-  trainings: [],         // List of all BaseTraining catalog objects
-  activeUser: null,      // User instance representing the selected user
-  activeSessions: [],    // Array of session subclass instances for the active user
-  sortField: 'date',     // 'date' or 'name' or 'effortScore'
-  sortOrder: 'desc',     // 'asc' or 'desc'
-  searchQuery: '',       // Search input filter
-  filterType: 'All',     // 'All', 'Power', 'Aerobic'
-  filterMuscle: 'All',   // 'All', 'Chest', 'Back', 'Legs', etc.
-  editingSessionId: null // Session ID currently being edited
+  token: null,           // JWT Security Token (Held in runtime memory)
+  userRole: null,        // 'user', 'admin', or 'superadmin'
+  userId: null,          // Logged-in user's database ID
+  users: [],             // All loaded user profiles (for admins)
+  trainings: [],         // Trainings catalog list
+  activeUser: null,      // User instance representing the viewed profile
+  activeSessions: [],    // Workouts of the active viewed user
+  sortField: 'date',     // 'date', 'name', 'effortScore'
+  sortOrder: 'desc',     // 'asc', 'desc'
+  searchQuery: '',       // Filtering query
+  filterType: 'All',     // Type filter
+  filterMuscle: 'All',   // Muscle group filter
+  editingSessionId: null // Target session ID for edit
 };
 
 
@@ -138,18 +144,45 @@ const AppState = {
  * DOM ELEMENT SELECTION
  */
 const dom = {
+  authOverlay: document.getElementById('auth-overlay'),
+  loginForm: document.getElementById('login-form'),
+  registerForm: document.getElementById('register-form'),
+  authSubtitle: document.getElementById('auth-subtitle-text'),
+  linkShowRegister: document.getElementById('link-show-register'),
+  linkShowLogin: document.getElementById('link-show-login'),
+  
+  loginUsername: document.getElementById('login-username'),
+  loginPassword: document.getElementById('login-password'),
+  loginUsernameError: document.getElementById('login-username-error'),
+  loginPasswordError: document.getElementById('login-password-error'),
+  
+  registerName: document.getElementById('register-name'),
+  registerTel: document.getElementById('register-tel'),
+  registerPassword: document.getElementById('register-password'),
+  registerNameError: document.getElementById('register-name-error'),
+  registerTelError: document.getElementById('register-tel-error'),
+  registerPasswordError: document.getElementById('register-password-error'),
+  
+  appContainer: document.getElementById('app-container'),
+  btnLogout: document.getElementById('btn-logout'),
+  userSelectContainer: document.getElementById('user-select-container'),
   userSelect: document.getElementById('user-select'),
   btnShowAddUser: document.getElementById('btn-show-add-user'),
+  
   addUserModal: document.getElementById('add-user-modal'),
   addUserForm: document.getElementById('add-user-form'),
   newUserName: document.getElementById('new-user-name'),
   newUserTel: document.getElementById('new-user-tel'),
+  newUserPassword: document.getElementById('new-user-password'),
+  newUserRole: document.getElementById('new-user-role'),
   newUserNameError: document.getElementById('new-user-name-error'),
   newUserTelError: document.getElementById('new-user-tel-error'),
+  newUserPasswordError: document.getElementById('new-user-password-error'),
   btnCancelAddUser: document.getElementById('btn-cancel-add-user'),
   
   displayUserName: document.getElementById('display-user-name'),
   displayUserTel: document.getElementById('display-user-tel'),
+  displayUserRole: document.getElementById('display-user-role'),
   
   catalogList: document.getElementById('catalog-list'),
   addCatalogForm: document.getElementById('add-catalog-form'),
@@ -219,173 +252,289 @@ const dom = {
 
 
 /**
- * API SERVICE / BACKEND NETWORK CALLS
+ * API SERVICE / BACKEND NETWORK CALLS WITH JWT HEADERS
  */
 
 /**
- * Fetch all users from server
+ * Build request options containing Authorization headers if token is present
+ */
+function getRequestOptions(method, body = null) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (AppState.token) {
+    headers['Authorization'] = `Bearer ${AppState.token}`;
+  }
+  const options = { method, headers };
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+  return options;
+}
+
+/**
+ * Handle authentication login
+ */
+async function apiLogin(name, password) {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, password })
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Login failed');
+  }
+  return await res.json();
+}
+
+/**
+ * Handle public user registration
+ */
+async function apiRegister(name, tel, password) {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, tel, password })
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Registration failed');
+  }
+  return await res.json();
+}
+
+/**
+ * Fetch all users (Admins only)
  */
 async function apiGetUsers() {
-  const res = await fetch(`${API_BASE_URL}/users`);
-  if (!res.ok) throw new Error('Failed to load users');
+  const res = await fetch(`${API_BASE_URL}/users`, getRequestOptions('GET'));
+  if (!res.ok) throw new Error('Unauthorized to fetch users list.');
   return await res.json();
 }
 
 /**
- * Create a new user profile on server
+ * Fetch specific user profile (sessions included)
  */
-async function apiCreateUser(name, tel) {
-  const res = await fetch(`${API_BASE_URL}/users`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, tel })
-  });
-  if (!res.ok) throw new Error('Failed to create user');
+async function apiGetUserProfile(userId) {
+  const res = await fetch(`${API_BASE_URL}/users/${userId}`, getRequestOptions('GET'));
+  if (!res.ok) throw new Error('Unauthorized to fetch this user profile.');
   return await res.json();
 }
 
 /**
- * Fetch trainings catalog from server
+ * Admin API to create user profile
+ */
+async function apiAdminCreateUser(userData) {
+  const res = await fetch(`${API_BASE_URL}/users`, getRequestOptions('POST', userData));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to create user profile.');
+  }
+  return await res.json();
+}
+
+/**
+ * Fetch exercise catalog
  */
 async function apiGetTrainings() {
-  const res = await fetch(`${API_BASE_URL}/trainings`);
-  if (!res.ok) throw new Error('Failed to load trainings');
+  const res = await fetch(`${API_BASE_URL}/trainings`, getRequestOptions('GET'));
+  if (!res.ok) throw new Error('Failed to load trainings catalog.');
   return await res.json();
 }
 
 /**
- * Add a training item to the catalog
+ * Add exercise to catalog
  */
 async function apiCreateTraining(type, name) {
-  const res = await fetch(`${API_BASE_URL}/trainings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type, name })
-  });
-  if (!res.ok) throw new Error('Failed to add exercise to catalog');
+  const res = await fetch(`${API_BASE_URL}/trainings`, getRequestOptions('POST', { type, name }));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to add catalog exercise.');
+  }
   return await res.json();
 }
 
 /**
- * Log a new workout session for a user
+ * Delete training catalog item (Super Admin only)
+ */
+async function apiDeleteCatalogTraining(trainingId) {
+  const res = await fetch(`${API_BASE_URL}/trainings/${trainingId}`, getRequestOptions('DELETE'));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to delete catalog item.');
+  }
+  return await res.json();
+}
+
+/**
+ * Log workout session
  */
 async function apiCreateSession(userId, sessionData) {
-  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(sessionData)
-  });
-  if (!res.ok) throw new Error('Failed to save workout session');
+  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, getRequestOptions('POST', sessionData));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to log workout session.');
+  }
   return await res.json();
 }
 
 /**
- * Update an existing session
+ * Edit workout session
  */
 async function apiUpdateSession(userId, sessionId, updateData) {
-  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions/${sessionId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updateData)
-  });
-  if (!res.ok) throw new Error('Failed to update workout session');
+  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions/${sessionId}`, getRequestOptions('PUT', updateData));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to update session.');
+  }
   return await res.json();
 }
 
 /**
- * Delete a session
+ * Delete session
  */
 async function apiDeleteSession(userId, sessionId) {
-  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions/${sessionId}`, {
-    method: 'DELETE'
-  });
-  if (!res.ok) throw new Error('Failed to delete workout session');
+  const res = await fetch(`${API_BASE_URL}/users/${userId}/sessions/${sessionId}`, getRequestOptions('DELETE'));
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to delete session.');
+  }
   return await res.json();
 }
 
 
 /**
- * INITIALIZATION & USER SWITCHING LOGIC
+ * APPLICATION CONTROL FLOW & INITIALIZATION
  */
 
 /**
- * Initialize application state by loading users and catalog
+ * Triggered upon successful login or registration
  */
-async function initializeApp() {
+async function handleAuthenticationSuccess(authResponse) {
+  // 1. Save credentials in memory state
+  AppState.token = authResponse.token;
+  AppState.userId = Number(authResponse.user.id);
+  AppState.userRole = authResponse.user.role;
+
+  // 2. Adjust visibility of features depending on user access level
+  adjustUIForRole();
+
+  // 3. Load initial catalog data
   try {
-    // 1. Fetch data from backend
-    AppState.users = await apiGetUsers();
     AppState.trainings = await apiGetTrainings();
-
-    // 2. Render User selection options
-    renderUserSelectDropdown();
-    
-    // 3. Pre-select first user if available
-    if (AppState.users.length > 0) {
-      AppState.selectedUserId = AppState.users[0].id;
-      dom.userSelect.value = AppState.selectedUserId;
-      selectActiveUser(AppState.selectedUserId);
-    }
-
-    // 4. Render initial lists and stats
     renderTrainingsCatalog();
     populateExerciseSelectDropdown();
-    updateGlobalStats();
   } catch (err) {
-    console.error('Initialization error:', err);
+    console.error('Error loading exercises catalog:', err);
+  }
+
+  // 4. Load profiles depending on access level
+  if (AppState.userRole === 'admin' || AppState.userRole === 'superadmin') {
+    try {
+      AppState.users = await apiGetUsers();
+      renderUserSelectDropdown();
+      
+      // Auto-view the active user profile or Hilli Schlesinger if viewing
+      const selfExists = AppState.users.find(u => u.id === AppState.userId);
+      if (selfExists) {
+        dom.userSelect.value = AppState.userId;
+        await selectActiveUser(AppState.userId);
+      } else if (AppState.users.length > 0) {
+        dom.userSelect.value = AppState.users[0].id;
+        await selectActiveUser(AppState.users[0].id);
+      }
+    } catch (err) {
+      console.error('Error loading administrative list:', err);
+    }
+  } else {
+    // Regular user: can only fetch themselves
+    await selectActiveUser(AppState.userId);
+  }
+
+  // Reveal dashboard, hide auth overlays
+  dom.authOverlay.classList.add('hidden');
+  dom.appContainer.classList.remove('hidden');
+}
+
+/**
+ * Dynamic UI Adjustment depending on user role
+ * Uses display: none (CSS hidden class) to hide unauthorized controls
+ */
+function adjustUIForRole() {
+  if (AppState.userRole === 'user') {
+    // Hide user switcher and catalog addition form
+    dom.userSelectContainer.classList.add('hidden');
+    dom.btnShowAddUser.classList.add('hidden');
+    dom.addCatalogForm.classList.add('hidden');
+  } else if (AppState.userRole === 'admin') {
+    // Show user switcher, show catalog addition form
+    dom.userSelectContainer.classList.remove('hidden');
+    dom.btnShowAddUser.classList.remove('hidden');
+    dom.addCatalogForm.classList.remove('hidden');
+  } else if (AppState.userRole === 'superadmin') {
+    // Full visibility
+    dom.userSelectContainer.classList.remove('hidden');
+    dom.btnShowAddUser.classList.remove('hidden');
+    dom.addCatalogForm.classList.remove('hidden');
   }
 }
 
 /**
- * Populate user dropdown switcher
+ * Switches the actively viewed user profile
+ */
+async function selectActiveUser(userId) {
+  try {
+    const userObj = await apiGetUserProfile(userId);
+
+    // Instantiate User using standard OOP Class (instantiates session subclasses)
+    AppState.activeUser = new User(userObj.id, userObj.name, userObj.tel, userObj.role, userObj.sessions);
+    AppState.activeSessions = AppState.activeUser.sessions;
+
+    // Render active profile detail cards
+    dom.displayUserName.textContent = AppState.activeUser.name;
+    dom.displayUserTel.textContent = AppState.activeUser.tel;
+    dom.displayUserRole.textContent = AppState.activeUser.role;
+
+    // Apply role-specific badges styling classes
+    dom.displayUserRole.className = 'badge-role';
+    if (AppState.activeUser.role === 'superadmin') {
+      dom.displayUserRole.classList.add('superadmin');
+    } else if (AppState.activeUser.role === 'admin') {
+      dom.displayUserRole.classList.add('admin');
+    }
+
+    // Reset forms
+    clearFormErrors(dom.workoutSessionForm);
+    dom.workoutSessionForm.reset();
+    dom.dynamicAerobicFields.classList.add('hidden');
+    dom.dynamicPowerFields.classList.add('hidden');
+
+    // Rebuild lists, stats, and insights
+    processAndRenderSessions();
+    updateGlobalStats();
+  } catch (err) {
+    console.error('Error selecting user:', err);
+  }
+}
+
+/**
+ * Populates user list switcher dropdown
  */
 function renderUserSelectDropdown() {
-  const currentValue = dom.userSelect.value;
   dom.userSelect.innerHTML = '<option value="" disabled>Select User...</option>';
-  
   AppState.users.forEach(user => {
     const opt = document.createElement('option');
     opt.value = user.id;
-    opt.textContent = `${user.name} (${user.tel})`;
+    opt.textContent = `${user.name} (${user.tel}) - ${user.role}`;
     dom.userSelect.appendChild(opt);
   });
-
-  if (currentValue && AppState.users.some(u => u.id === Number(currentValue))) {
-    dom.userSelect.value = currentValue;
-  }
 }
 
 /**
- * Switch active user context and load their activities
- */
-function selectActiveUser(userId) {
-  const userObj = AppState.users.find(u => u.id === Number(userId));
-  if (!userObj) return;
-
-  // Instantiate OOP class User
-  AppState.activeUser = new User(userObj.id, userObj.name, userObj.tel, userObj.sessions);
-  AppState.activeSessions = AppState.activeUser.sessions;
-
-  // Update UI Elements
-  dom.displayUserName.textContent = AppState.activeUser.name;
-  dom.displayUserTel.textContent = AppState.activeUser.tel;
-
-  // Clear inputs and error warnings
-  clearFormErrors(dom.workoutSessionForm);
-  dom.workoutSessionForm.reset();
-  dom.dynamicAerobicFields.classList.add('hidden');
-  dom.dynamicPowerFields.classList.add('hidden');
-
-  // Trigger filters, stats, and insights updates
-  processAndRenderSessions();
-  updateGlobalStats();
-}
-
-/**
- * Updates summary stats card data
+ * Calculates statistics cards
  */
 function updateGlobalStats() {
-  dom.statTotalUsers.textContent = AppState.users.length;
+  // Show total system users (admins only; for regular users it is hidden or 1)
+  dom.statTotalUsers.textContent = AppState.userRole === 'user' ? 1 : AppState.users.length;
 
   if (!AppState.activeUser) {
     dom.statMaxWeight.innerHTML = `0 <span class="unit">kg</span>`;
@@ -394,14 +543,12 @@ function updateGlobalStats() {
     return;
   }
 
-  // Calculate statistics using array methods: filter, map, reduce
   const sessions = AppState.activeSessions;
   
-  // Power Sessions Stats
+  // Power stats
   const powerSessions = sessions.filter(s => s.type === 'Power');
   dom.statTotalPower.textContent = powerSessions.length;
 
-  // Max Weight Lifted
   if (powerSessions.length > 0) {
     const weights = powerSessions.map(s => s.weight);
     const maxWeight = Math.max(...weights);
@@ -410,7 +557,7 @@ function updateGlobalStats() {
     dom.statMaxWeight.innerHTML = `0 <span class="unit">kg</span>`;
   }
 
-  // Avg Aerobic Time
+  // Aerobic stats
   const aerobicSessions = sessions.filter(s => s.type === 'Aerobic');
   if (aerobicSessions.length > 0) {
     const totalDuration = aerobicSessions.reduce((acc, curr) => acc + curr.duration, 0);
@@ -422,15 +569,15 @@ function updateGlobalStats() {
 }
 
 /**
- * Generate 4 human-readable insights for the active user
+ * Evaluates performance statistics and updates the AI Insights panel
  */
 function renderInsights() {
   dom.insightsGrid.innerHTML = '';
-  
+
   if (!AppState.activeUser || AppState.activeSessions.length === 0) {
     dom.insightsGrid.innerHTML = `
       <div class="insight-item" style="grid-column: span 2; justify-content: center;">
-        <p class="insight-text" style="color: var(--text-muted);">Not enough training data available to calculate insights.</p>
+        <p class="insight-text" style="color: var(--text-muted);">Not enough activity data to compile training insights.</p>
       </div>
     `;
     return;
@@ -443,31 +590,32 @@ function renderInsights() {
 
   const insights = [];
 
-  // Insight 1: Distribution Ratio
+  // Insight 1: Power vs Aerobic ratio
   const powerPercentage = Math.round((powerSessions.length / totalCount) * 100);
   const aerobicPercentage = 100 - powerPercentage;
   insights.push({
     icon: '📊',
-    text: `Your training focus is ${powerPercentage}% Power workouts and ${aerobicPercentage}% Aerobic routines.`
+    text: `Your current workout balance is ${powerPercentage}% Power lifting and ${aerobicPercentage}% Aerobic cardio.`
   });
 
-  // Insight 2: Max Effort Workout (Power vs Aerobic comparison)
+  // Insight 2: Peak Calorie Burn/Effort Workout
   const maxEffortSession = [...sessions].sort((a, b) => b.calculateEffortScore() - a.calculateEffortScore())[0];
   if (maxEffortSession) {
     const score = Math.round(maxEffortSession.calculateEffortScore());
+    const label = maxEffortSession.type === 'Aerobic' ? 'kcal burned' : 'effort score';
     insights.push({
-      icon: '🏆',
-      text: `Your single highest effort workout was "${maxEffortSession.name}" on ${maxEffortSession.date} with a performance score of ${score}.`
+      icon: '🔥',
+      text: `Your peak performance session was "${maxEffortSession.name}" on ${maxEffortSession.date} reaching ${score} ${label}.`
     });
   }
 
-  // Insight 3: Power insights (most targeted muscle group)
+  // Insight 3: Muscle groups trends
   if (powerSessions.length > 0) {
     const muscleCounts = powerSessions.reduce((acc, curr) => {
       acc[curr.muscleGroup] = (acc[curr.muscleGroup] || 0) + 1;
       return acc;
     }, {});
-    
+
     let favoriteMuscle = '';
     let maxCount = 0;
     for (const [muscle, count] of Object.entries(muscleCounts)) {
@@ -476,42 +624,33 @@ function renderInsights() {
         favoriteMuscle = muscle;
       }
     }
-    
+
     insights.push({
       icon: '🏋️',
-      text: `You target the "${favoriteMuscle}" muscle group most frequently, accounting for ${maxCount} power sessions.`
+      text: `You target the "${favoriteMuscle}" muscle group most, logging it in ${maxCount} power sessions.`
     });
   } else {
     insights.push({
       icon: '🏋️',
-      text: 'Log your first Power lifting session to analyze target muscle group trends.'
+      text: 'Log your first Power lift workout to compile muscle group training insights.'
     });
   }
 
-  // Insight 4: Aerobic insights (consistency and speed progress)
+  // Insight 4: Calorie pacing metrics
   if (aerobicSessions.length > 0) {
-    const avgSpeed = (aerobicSessions.reduce((acc, curr) => acc + curr.speed, 0) / aerobicSessions.length).toFixed(1);
-    const hasHardWorkouts = aerobicSessions.some(s => s.difficulty === 'Hard');
-    
-    let aerobicInsightText = `Your average aerobic pace is ${avgSpeed} km/h. `;
-    if (hasHardWorkouts) {
-      aerobicInsightText += "You've successfully conquered 'Hard' difficulty cardio challenges!";
-    } else {
-      aerobicInsightText += "Challenge yourself by dialing up difficulty to 'Hard' in future sessions.";
-    }
-
+    const avgCalories = (aerobicSessions.reduce((acc, curr) => acc + curr.calculateEffortScore(), 0) / aerobicSessions.length).toFixed(0);
     insights.push({
       icon: '🏃',
-      text: aerobicInsightText
+      text: `Your average aerobic session burns ${avgCalories} kcal. Keep pushing your cardiorespiratory endurance!`
     });
   } else {
     insights.push({
       icon: '🏃',
-      text: 'Cardiovascular activity is key! Try adding an aerobic workout like Running or Cycling to your regime.'
+      text: 'Aerobic workouts burn calories and improve heart health. Try adding Treadmill Runs to your profile.'
     });
   }
 
-  // Make sure at least 4 items are displayed
+  // Inject first 4 insights
   insights.slice(0, 4).forEach(ins => {
     const div = document.createElement('div');
     div.className = 'insight-item';
@@ -529,31 +668,30 @@ function renderInsights() {
  */
 
 /**
- * Handle search, filter, and sort criteria, and rebuild cards in DOM
+ * Handle query conditions, run sorting, and refresh DOM cards
  */
 function processAndRenderSessions() {
   let filtered = [...AppState.activeSessions];
 
-  // 1. Filter by search query (case-insensitive)
+  // 1. Query search
   if (AppState.searchQuery.trim() !== '') {
     const query = AppState.searchQuery.toLowerCase();
     filtered = filtered.filter(s => s.name.toLowerCase().includes(query));
   }
 
-  // 2. Filter by Workout Type (Power / Aerobic)
+  // 2. Type filter
   if (AppState.filterType !== 'All') {
     filtered = filtered.filter(s => s.type === AppState.filterType);
   }
 
-  // 3. Filter by Muscle Group (Power sessions only)
+  // 3. Muscle filter
   if (AppState.filterMuscle !== 'All') {
     filtered = filtered.filter(s => s.type === 'Power' && s.muscleGroup === AppState.filterMuscle);
   }
 
-  // 4. Sort workouts
+  // 4. Sort
   filtered.sort((a, b) => {
     let comparison = 0;
-    
     if (AppState.sortField === 'date') {
       comparison = new Date(a.date) - new Date(b.date);
     } else if (AppState.sortField === 'name') {
@@ -561,17 +699,26 @@ function processAndRenderSessions() {
     } else if (AppState.sortField === 'effortScore') {
       comparison = a.calculateEffortScore() - b.calculateEffortScore();
     }
-
     return AppState.sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  // Render cards
   renderSessionCards(filtered);
   renderInsights();
 }
 
 /**
- * Generates workout session cards and injects them in DOM
+ * Helper to get CSS class 'empty-field' if a value is empty, null, or undefined.
+ * This ensures empty fields are hidden using display: none (none of CSS!)
+ */
+function emptyClass(value) {
+  if (value === undefined || value === null || value === '') {
+    return 'empty-field';
+  }
+  return '';
+}
+
+/**
+ * Render cards list in DOM
  */
 function renderSessionCards(sessions) {
   dom.sessionsContainer.innerHTML = '';
@@ -585,44 +732,70 @@ function renderSessionCards(sessions) {
   dom.noSessionsPlaceholder.classList.add('hidden');
 
   sessions.forEach(session => {
-    const effort = Math.round(session.calculateEffortScore());
+    const valueScore = Math.round(session.calculateEffortScore());
+    const scoreLabel = session.type === 'Aerobic' ? 'kcal burned' : 'effort score';
+
     const card = document.createElement('article');
     card.className = `workout-card glass-card ${session.type.toLowerCase()}`;
     card.setAttribute('data-session-id', session.sessionId);
 
-    // Build specific details structure
+    // Build details grid. Apply emptyClass helper to hide any empty properties
     let detailsHtml = '';
     if (session.type === 'Aerobic') {
       detailsHtml = `
-        <div class="detail-item">
+        <div class="detail-item ${emptyClass(session.duration)}">
           <span class="detail-label">Duration</span>
           <span class="detail-value">${session.duration} min</span>
         </div>
-        <div class="detail-item">
+        <div class="detail-item ${emptyClass(session.speed)}">
           <span class="detail-label">Speed</span>
           <span class="detail-value">${session.speed} km/h</span>
         </div>
-        <div class="detail-item">
+        <div class="detail-item ${emptyClass(session.difficulty)}">
           <span class="detail-label">Difficulty</span>
           <span class="detail-value">${session.difficulty}</span>
+        </div>
+        <!-- Empty Power fields (explicitly hidden using emptyClass or omitted) -->
+        <div class="detail-item empty-field">
+          <span class="detail-label">Muscle</span>
+          <span class="detail-value"></span>
         </div>
       `;
     } else if (session.type === 'Power') {
       detailsHtml = `
-        <div class="detail-item">
+        <div class="detail-item ${emptyClass(session.muscleGroup)}">
           <span class="detail-label">Muscle</span>
           <span class="detail-value">${session.muscleGroup}</span>
         </div>
-        <div class="detail-item">
+        <div class="detail-item ${emptyClass(session.weight)}">
           <span class="detail-label">Weight</span>
           <span class="detail-value">${session.weight} kg</span>
         </div>
-        <div class="detail-item">
-          <span class="detail-label">Sets × Reps</span>
-          <span class="detail-value">${session.sets} × ${session.reps}</span>
+        <div class="detail-item ${emptyClass(session.sets)}">
+          <span class="detail-label">Sets</span>
+          <span class="detail-value">${session.sets} sets</span>
+        </div>
+        <div class="detail-item ${emptyClass(session.reps)}">
+          <span class="detail-label">Reps</span>
+          <span class="detail-value">${session.reps} reps</span>
         </div>
       `;
     }
+
+    // Role restrictions: 
+    // - Regular user can edit/delete their own session.
+    // - Super Admin can edit/delete anyone.
+    // - Staff Admin can never delete sessions.
+    const isOwner = AppState.userId === AppState.activeUser.id;
+    const canDelete = AppState.userRole === 'superadmin' || (AppState.userRole === 'user' && isOwner);
+    const canEdit = AppState.userRole === 'superadmin' || (AppState.userRole === 'user' && isOwner);
+
+    const deleteBtnHtml = canDelete 
+      ? `<button type="button" class="btn btn-danger btn-icon-only" onclick="handleDeleteSessionClick('${session.sessionId}')">Delete</button>` 
+      : '';
+    const editBtnHtml = canEdit 
+      ? `<button type="button" class="btn btn-secondary btn-icon-only btn-edit" onclick="handleEditSessionClick('${session.sessionId}')">Edit</button>` 
+      : '';
 
     card.innerHTML = `
       <div class="card-header-row">
@@ -631,8 +804,8 @@ function renderSessionCards(sessions) {
           <span class="card-date">🗓️ ${session.date}</span>
         </div>
         <div class="card-effort-badge">
-          <span class="effort-val">${effort}</span>
-          <span class="effort-lbl">Effort score</span>
+          <span class="effort-val">${valueScore}</span>
+          <span class="effort-lbl">${scoreLabel}</span>
         </div>
       </div>
 
@@ -640,13 +813,9 @@ function renderSessionCards(sessions) {
         ${detailsHtml}
       </div>
 
-      <div class="card-actions-row">
-        <button type="button" class="btn btn-secondary btn-icon-only btn-edit" onclick="handleEditSessionClick('${session.sessionId}')">
-          Edit
-        </button>
-        <button type="button" class="btn btn-danger btn-icon-only" onclick="handleDeleteSessionClick('${session.sessionId}')">
-          Delete
-        </button>
+      <div class="card-actions-row ${emptyClass(deleteBtnHtml && editBtnHtml)}">
+        ${editBtnHtml}
+        ${deleteBtnHtml}
       </div>
     `;
 
@@ -655,7 +824,7 @@ function renderSessionCards(sessions) {
 }
 
 /**
- * Render catalog list inside sidebar
+ * Render trainings catalog in sidebar
  */
 function renderTrainingsCatalog() {
   dom.catalogList.innerHTML = '';
@@ -663,40 +832,40 @@ function renderTrainingsCatalog() {
   AppState.trainings.forEach(item => {
     const li = document.createElement('li');
     li.className = 'catalog-item';
+    
+    // Superadmin has access to delete exercises, others do not
+    const showDeleteBtn = AppState.userRole === 'superadmin';
+    const deleteBtn = showDeleteBtn 
+      ? `<button type="button" class="btn-catalog-delete" onclick="handleDeleteCatalogItemClick(${item.id})" title="Delete Exercise Category">🗑️</button>` 
+      : '';
+
     li.innerHTML = `
       <span class="catalog-item-name">${item.name}</span>
-      <span class="badge-type ${item.type.toLowerCase()}">${item.type}</span>
+      <div class="catalog-badge-row">
+        <span class="badge-type ${item.type.toLowerCase()}">${item.type}</span>
+        ${deleteBtn}
+      </div>
     `;
     dom.catalogList.appendChild(li);
   });
 }
 
 /**
- * Populate Exercise Selection dropdown inside logging form
+ * Populate Exercise Selector dropdown in form
  */
 function populateExerciseSelectDropdown() {
-  const currentValue = dom.sessionExerciseSelect.value;
   dom.sessionExerciseSelect.innerHTML = '<option value="" disabled selected>Choose from catalog...</option>';
-  
   AppState.trainings.forEach(item => {
     const opt = document.createElement('option');
     opt.value = item.id;
     opt.textContent = `${item.name} (${item.type})`;
     dom.sessionExerciseSelect.appendChild(opt);
   });
-
-  if (currentValue && AppState.trainings.some(t => t.id === Number(currentValue))) {
-    dom.sessionExerciseSelect.value = currentValue;
-  }
 }
 
 
 /**
  * FORM VALIDATION AND UTILITIES
- */
-
-/**
- * Display specific text validation error beneath an input
  */
 function showInputError(element, message) {
   if (element) {
@@ -704,9 +873,6 @@ function showInputError(element, message) {
   }
 }
 
-/**
- * Clear all warning messages in a form
- */
 function clearFormErrors(formElement) {
   const errors = formElement.querySelectorAll('.error-msg');
   errors.forEach(e => e.textContent = '');
@@ -714,69 +880,191 @@ function clearFormErrors(formElement) {
 
 
 /**
- * EVENT HANDLERS & BINDINGS
+ * EVENT HANDLERS & INTERACTIONS BINDINGS
  */
 
-// User Selection switch
-dom.userSelect.addEventListener('change', (e) => {
-  selectActiveUser(e.target.value);
-});
-
-// Trigger User Modal show
-dom.btnShowAddUser.addEventListener('click', () => {
-  clearFormErrors(dom.addUserForm);
-  dom.addUserForm.reset();
-  dom.addUserModal.classList.remove('hidden');
-});
-
-// Cancel User Modal
-dom.btnCancelAddUser.addEventListener('click', () => {
-  dom.addUserModal.classList.add('hidden');
-});
-
-// Handle User submit creation
-dom.addUserForm.addEventListener('submit', async (e) => {
+// Toggle registration mode inside auth overlay
+dom.linkShowRegister.addEventListener('click', (e) => {
   e.preventDefault();
-  clearFormErrors(dom.addUserForm);
-  
-  const name = dom.newUserName.value.trim();
-  const tel = dom.newUserTel.value.trim();
-  
+  clearFormErrors(dom.loginForm);
+  dom.loginForm.classList.add('hidden');
+  dom.registerForm.classList.remove('hidden');
+  dom.authSubtitle.textContent = 'Create a secure PulseFit profile';
+});
+
+// Toggle login mode inside auth overlay
+dom.linkShowLogin.addEventListener('click', (e) => {
+  e.preventDefault();
+  clearFormErrors(dom.registerForm);
+  dom.registerForm.classList.add('hidden');
+  dom.loginForm.classList.remove('hidden');
+  dom.authSubtitle.textContent = 'Sign in to track your gym progress';
+});
+
+// Login Form Submit handler
+dom.loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearFormErrors(dom.loginForm);
+
+  const username = dom.loginUsername.value.trim();
+  const password = dom.loginPassword.value;
+
   let valid = true;
-  if (!name) {
-    showInputError(dom.newUserNameError, 'Name is required.');
+  if (!username) {
+    showInputError(dom.loginUsernameError, 'Username or telephone contact is required.');
     valid = false;
   }
-  if (!tel) {
-    showInputError(dom.newUserTelError, 'Contact is required.');
-    valid = false;
-  } else if (!/^[0-9\-+ ]{7,15}$/.test(tel)) {
-    showInputError(dom.newUserTelError, 'Provide a valid phone format.');
+  if (!password) {
+    showInputError(dom.loginPasswordError, 'Password is required.');
     valid = false;
   }
 
   if (!valid) return;
 
   try {
-    const newUserObj = await apiCreateUser(name, tel);
-    AppState.users.push(newUserObj);
-    
-    // Refresh dropdown selection list
-    renderUserSelectDropdown();
-    
-    // Switch to the newly created user
-    AppState.selectedUserId = newUserObj.id;
-    dom.userSelect.value = AppState.selectedUserId;
-    selectActiveUser(AppState.selectedUserId);
-    
-    // Close modal
-    dom.addUserModal.classList.add('hidden');
+    const authRes = await apiLogin(username, password);
+    await handleAuthenticationSuccess(authRes);
   } catch (err) {
-    console.error(err);
+    showInputError(dom.loginPasswordError, err.message || 'Invalid username or password.');
   }
 });
 
-// Handle exercise catalog submit adding
+// Registration Form Submit handler
+dom.registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearFormErrors(dom.registerForm);
+
+  const name = dom.registerName.value.trim();
+  const tel = dom.registerTel.value.trim();
+  const password = dom.registerPassword.value;
+
+  let valid = true;
+  if (!name) {
+    showInputError(dom.registerNameError, 'Full name is required.');
+    valid = false;
+  }
+  if (!tel) {
+    showInputError(dom.registerTelError, 'Telephone contact is required.');
+    valid = false;
+  } else if (!/^[0-9\-+ ]{7,15}$/.test(tel)) {
+    showInputError(dom.registerTelError, 'Provide a valid phone format.');
+    valid = false;
+  }
+  if (!password || password.length < 4) {
+    showInputError(dom.registerPasswordError, 'Password must be at least 4 characters.');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  try {
+    const authRes = await apiRegister(name, tel, password);
+    await handleAuthenticationSuccess(authRes);
+  } catch (err) {
+    showInputError(dom.registerPasswordError, err.message || 'Failed to register account.');
+  }
+});
+
+// Log Out Handler
+dom.btnLogout.addEventListener('click', () => {
+  // Wipe runtime token memory
+  AppState.token = null;
+  AppState.userRole = null;
+  AppState.userId = null;
+  AppState.users = [];
+  AppState.activeUser = null;
+  AppState.activeSessions = [];
+
+  // Reset forms
+  dom.loginForm.reset();
+  dom.registerForm.reset();
+  dom.loginForm.classList.remove('hidden');
+  dom.registerForm.classList.add('hidden');
+  dom.authSubtitle.textContent = 'Sign in to track your gym progress';
+
+  // Toggle screens
+  dom.appContainer.classList.add('hidden');
+  dom.authOverlay.classList.remove('hidden');
+});
+
+// Switch active viewed user (Admins/Superadmins only)
+dom.userSelect.addEventListener('change', (e) => {
+  selectActiveUser(e.target.value);
+});
+
+// Show Create User Modal
+dom.btnShowAddUser.addEventListener('click', () => {
+  clearFormErrors(dom.addUserForm);
+  dom.addUserForm.reset();
+  
+  // Staff Admin can create 'user' role only. Super Admin can create 'admin' as well.
+  if (AppState.userRole === 'admin') {
+    document.getElementById('new-user-role-field').classList.add('hidden');
+  } else {
+    document.getElementById('new-user-role-field').classList.remove('hidden');
+  }
+
+  dom.addUserModal.classList.remove('hidden');
+});
+
+dom.btnCancelAddUser.addEventListener('click', () => {
+  dom.addUserModal.classList.add('hidden');
+});
+
+// Administrative Create User profile submission
+dom.addUserForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearFormErrors(dom.addUserForm);
+
+  const name = dom.newUserName.value.trim();
+  const tel = dom.newUserTel.value.trim();
+  const password = dom.newUserPassword.value;
+  const role = dom.newUserRole.value;
+
+  let valid = true;
+  if (!name) {
+    showInputError(dom.newUserNameError, 'Name is required.');
+    valid = false;
+  }
+  if (!tel) {
+    showInputError(dom.newUserTelError, 'Contact tel is required.');
+    valid = false;
+  } else if (!/^[0-9\-+ ]{7,15}$/.test(tel)) {
+    showInputError(dom.newUserTelError, 'Provide a valid phone format.');
+    valid = false;
+  }
+  if (!password || password.length < 4) {
+    showInputError(dom.newUserPasswordError, 'Password must be at least 4 characters.');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  try {
+    const payload = { name, tel, password };
+    if (AppState.userRole === 'superadmin') {
+      payload.role = role;
+    } else {
+      payload.role = 'user'; // Staff admin defaults to user
+    }
+
+    const createdUser = await apiAdminCreateUser(payload);
+    
+    // Refresh local lists
+    AppState.users.push(createdUser);
+    renderUserSelectDropdown();
+    
+    // Auto switch to view the created user profile
+    dom.userSelect.value = createdUser.id;
+    await selectActiveUser(createdUser.id);
+
+    dom.addUserModal.classList.add('hidden');
+  } catch (err) {
+    showInputError(dom.newUserPasswordError, err.message || 'Error creating user profile.');
+  }
+});
+
+// Catalog exercises additions
 dom.addCatalogForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearFormErrors(dom.addCatalogForm);
@@ -790,20 +1078,35 @@ dom.addCatalogForm.addEventListener('submit', async (e) => {
   }
 
   try {
-    const newItem = await apiCreateTraining(type, name);
-    AppState.trainings.push(newItem);
-    
-    // Refresh catalogs display in DOM
+    const createdTraining = await apiCreateTraining(type, name);
+    AppState.trainings.push(createdTraining);
+
     renderTrainingsCatalog();
     populateExerciseSelectDropdown();
-    
     dom.addCatalogForm.reset();
   } catch (err) {
-    console.error(err);
+    showInputError(dom.catalogNameError, err.message || 'Error adding item.');
   }
 });
 
-// Trigger forms display dynamically when selecting catalog exercises
+// Delete Catalog item (Superadmin only)
+window.handleDeleteCatalogItemClick = async function(trainingId) {
+  const confirmDel = confirm('Are you sure you want to delete this exercise category from the catalog? This will affect new logged sessions.');
+  if (!confirmDel) return;
+
+  try {
+    await apiDeleteCatalogTraining(trainingId);
+    AppState.trainings = AppState.trainings.filter(t => t.id !== trainingId);
+
+    renderTrainingsCatalog();
+    populateExerciseSelectDropdown();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || 'Error deleting catalog item.');
+  }
+};
+
+// Form Dynamic Inputs toggles on exercise selection
 dom.sessionExerciseSelect.addEventListener('change', (e) => {
   const val = e.target.value;
   const training = AppState.trainings.find(t => t.id === Number(val));
@@ -824,7 +1127,7 @@ dom.workoutSessionForm.addEventListener('submit', async (e) => {
   clearFormErrors(dom.workoutSessionForm);
 
   if (!AppState.activeUser) {
-    showInputError(dom.sessionExerciseError, 'Please select an active user first.');
+    showInputError(dom.sessionExerciseError, 'No active user selected.');
     return;
   }
 
@@ -832,13 +1135,12 @@ dom.workoutSessionForm.addEventListener('submit', async (e) => {
   const date = dom.sessionDate.value;
 
   let valid = true;
-
   if (!trainingId) {
     showInputError(dom.sessionExerciseError, 'Choose an exercise.');
     valid = false;
   }
   if (!date) {
-    showInputError(dom.sessionDateError, 'Select a date.');
+    showInputError(dom.sessionDateError, 'Choose a date.');
     valid = false;
   }
 
@@ -852,11 +1154,11 @@ dom.workoutSessionForm.addEventListener('submit', async (e) => {
       const diff = dom.aerobicDifficulty.value;
 
       if (!dur || Number(dur) <= 0) {
-        showInputError(dom.aerobicDurationError, 'Positive duration is required.');
+        showInputError(dom.aerobicDurationError, 'Positive duration required.');
         valid = false;
       }
       if (!spd || Number(spd) <= 0) {
-        showInputError(dom.aerobicSpeedError, 'Positive speed is required.');
+        showInputError(dom.aerobicSpeedError, 'Positive speed required.');
         valid = false;
       }
 
@@ -893,18 +1195,17 @@ dom.workoutSessionForm.addEventListener('submit', async (e) => {
 
   try {
     const savedSessionObj = await apiCreateSession(AppState.activeUser.id, payload);
-    
-    // Add instance of Session subclasses to AppState active sessions
     const instantiatedSession = mapSession(savedSessionObj);
+
+    // Update state and refresh
     AppState.activeSessions.push(instantiatedSession);
     
-    // Update local copy of users array
-    const usrIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
-    if (usrIdx !== -1) {
-      AppState.users[usrIdx].sessions.push(savedSessionObj);
+    // Sync within AppState.users list
+    const uIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
+    if (uIdx !== -1) {
+      AppState.users[uIdx].sessions.push(savedSessionObj);
     }
 
-    // Refresh display view
     processAndRenderSessions();
     updateGlobalStats();
 
@@ -913,7 +1214,7 @@ dom.workoutSessionForm.addEventListener('submit', async (e) => {
     dom.dynamicAerobicFields.classList.add('hidden');
     dom.dynamicPowerFields.classList.add('hidden');
   } catch (err) {
-    console.error(err);
+    showInputError(dom.sessionExerciseError, err.message || 'Error saving session.');
   }
 });
 
@@ -925,8 +1226,6 @@ dom.searchInput.addEventListener('input', (e) => {
 
 dom.filterType.addEventListener('change', (e) => {
   AppState.filterType = e.target.value;
-  
-  // Hide muscle selector if filter is Aerobic only
   if (AppState.filterType === 'Aerobic') {
     dom.filterMuscle.disabled = true;
     dom.filterMuscle.value = 'All';
@@ -965,10 +1264,6 @@ dom.btnToggleSort.addEventListener('click', () => {
 /**
  * EDIT & DELETE MODAL HANDLERS
  */
-
-/**
- * Triggered by Edit button inside a card
- */
 window.handleEditSessionClick = function(sessionId) {
   const session = AppState.activeSessions.find(s => s.sessionId === sessionId);
   if (!session) return;
@@ -976,11 +1271,9 @@ window.handleEditSessionClick = function(sessionId) {
   AppState.editingSessionId = sessionId;
   clearFormErrors(dom.editSessionForm);
 
-  // Populate common values
   dom.editSessionName.value = session.name;
   dom.editSessionDate.value = session.date;
 
-  // Reveal fields matching category
   if (session.type === 'Aerobic') {
     dom.editAerobicFields.classList.remove('hidden');
     dom.editPowerFields.classList.add('hidden');
@@ -1001,13 +1294,11 @@ window.handleEditSessionClick = function(sessionId) {
   dom.editSessionModal.classList.remove('hidden');
 };
 
-// Cancel editing
 dom.btnCancelEditSession.addEventListener('click', () => {
   dom.editSessionModal.classList.add('hidden');
   AppState.editingSessionId = null;
 });
 
-// Edit Submit Save
 dom.editSessionForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearFormErrors(dom.editSessionForm);
@@ -1016,7 +1307,6 @@ dom.editSessionForm.addEventListener('submit', async (e) => {
 
   const date = dom.editSessionDate.value;
   let valid = true;
-
   if (!date) {
     showInputError(dom.editSessionDateError, 'Date is required.');
     valid = false;
@@ -1075,62 +1365,52 @@ dom.editSessionForm.addEventListener('submit', async (e) => {
     const updatedRawSession = await apiUpdateSession(AppState.activeUser.id, AppState.editingSessionId, payload);
     const updatedInstance = mapSession(updatedRawSession);
 
-    // Update in AppState active sessions list
+    // Sync state
     const sessionIdx = AppState.activeSessions.findIndex(s => s.sessionId === AppState.editingSessionId);
     if (sessionIdx !== -1) {
       AppState.activeSessions[sessionIdx] = updatedInstance;
     }
 
-    // Update inside users array
-    const userIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
-    if (userIdx !== -1) {
-      const dbSessIdx = AppState.users[userIdx].sessions.findIndex(s => s.sessionId === AppState.editingSessionId);
-      if (dbSessIdx !== -1) {
-        AppState.users[userIdx].sessions[dbSessIdx] = updatedRawSession;
+    const uIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
+    if (uIdx !== -1) {
+      const sIdx = AppState.users[uIdx].sessions.findIndex(s => s.sessionId === AppState.editingSessionId);
+      if (sIdx !== -1) {
+        AppState.users[uIdx].sessions[sIdx] = updatedRawSession;
       }
     }
 
-    // Refresh
     processAndRenderSessions();
     updateGlobalStats();
 
-    // Close Modal
     dom.editSessionModal.classList.add('hidden');
     AppState.editingSessionId = null;
   } catch (err) {
-    console.error(err);
+    showInputError(dom.editSessionDateError, err.message || 'Error updating session.');
   }
 });
 
-/**
- * Triggered by Delete button inside a card
- */
+// Delete workout session
 window.handleDeleteSessionClick = async function(sessionId) {
   if (!AppState.activeUser) return;
-  
-  const confirmDelete = confirm('Are you sure you want to delete this workout session?');
-  if (!confirmDelete) return;
+
+  const confirmDel = confirm('Are you sure you want to delete this workout session?');
+  if (!confirmDel) return;
 
   try {
     await apiDeleteSession(AppState.activeUser.id, sessionId);
 
-    // Filter out from active sessions
+    // Filter local state
     AppState.activeSessions = AppState.activeSessions.filter(s => s.sessionId !== sessionId);
     
-    // Update local user sessions array
-    const userIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
-    if (userIdx !== -1) {
-      AppState.users[userIdx].sessions = AppState.users[userIdx].sessions.filter(s => s.sessionId !== sessionId);
+    const uIdx = AppState.users.findIndex(u => u.id === AppState.activeUser.id);
+    if (uIdx !== -1) {
+      AppState.users[uIdx].sessions = AppState.users[uIdx].sessions.filter(s => s.sessionId !== sessionId);
     }
 
-    // Refresh view
     processAndRenderSessions();
     updateGlobalStats();
   } catch (err) {
     console.error(err);
+    alert(err.message || 'Error deleting session.');
   }
 };
-
-
-// Run initialization on page load
-window.addEventListener('DOMContentLoaded', initializeApp);

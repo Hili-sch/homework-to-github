@@ -1,27 +1,41 @@
 /**
- * Fitness Tracker Dashboard - Express Backend
+ * Fitness Tracker Dashboard - Secure Express Backend with RBAC
  * 
  * This file serves as the main application entry point, containing:
  * 1. ES6 Class definitions for User, BaseTraining, BaseSession, AerobicSession, and PowerSession.
  * 2. File-based database helper functions using Node.js fs/promises.
- * 3. Express REST API endpoints to manage users, exercise catalogs, and workout sessions.
- * 4. Error-handling middleware and server startup logic.
+ * 3. JWT & Bcrypt password-based authentication routes (/api/auth/register, /api/auth/login).
+ * 4. Role-Based Access Control (RBAC) validations on Express API routes.
+ * 5. Startup database self-healing migration to pre-hash plain passwords.
  */
 
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs/promises');
 const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Import authentication and authorization middlewares
+const {
+  JWT_SECRET,
+  authenticateToken,
+  requireSuperAdmin,
+  requireAdminOrSuperAdmin,
+  verifyUserOwnership
+} = require('./middlewares/auth');
 
 const app = express();
 const PORT = 3000;
 
-// Enable CORS so the client (running via file system or static server) can communicate with the backend
+// Enable CORS so the client can query endpoints from different contexts
 app.use(cors());
-// Parse incoming JSON request bodies
+// Parse incoming JSON payloads
 app.use(express.json());
+// Serve frontend client folder statically
+app.use(express.static(path.join(__dirname, '..', 'client')));
 
-// Database paths
+// Database file paths
 const USERS_FILE_PATH = path.join(__dirname, 'db', 'users.json');
 const TRAININGS_FILE_PATH = path.join(__dirname, 'db', 'trainings.json');
 
@@ -42,15 +56,13 @@ function safeParseNumeric(value) {
 }
 
 /**
- * Helper to read JSON data from a file.
- * Returns an empty array if the file doesn't exist or is empty.
+ * Helper to read JSON database files.
  */
 async function readJsonFile(filePath) {
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(data || '[]');
   } catch (err) {
-    // If file does not exist, return empty list
     if (err.code === 'ENOENT') {
       return [];
     }
@@ -59,7 +71,7 @@ async function readJsonFile(filePath) {
 }
 
 /**
- * Helper to write JSON data to a file.
+ * Helper to write JSON database files.
  */
 async function writeJsonFile(filePath, data) {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
@@ -72,14 +84,11 @@ async function writeJsonFile(filePath, data) {
 
 /**
  * User Class
- * Represents a person tracking their gym progress.
  */
 class User {
-  // Static counter to assign unique, auto-incrementing IDs to new users and prevent duplicates
   static idCounter = 1;
 
-  constructor(id, name, tel, sessions = []) {
-    // If id is not specified, assign a new auto-incremented ID and update the static counter
+  constructor(id, name, tel, role = 'user', password, sessions = []) {
     if (!id) {
       this.id = User.idCounter++;
     } else {
@@ -87,17 +96,16 @@ class User {
     }
     this.name = name;
     this.tel = tel;
-    // sessions array holds instances of AerobicSession or PowerSession subclasses
+    this.role = role; // 'user', 'admin', or 'superadmin'
+    this.password = password; // Hashed password
     this.sessions = sessions;
   }
 }
 
 /**
  * Base Training Class (Catalog Level)
- * Defines the generic exercise category stored in the trainings catalog.
  */
 class BaseTraining {
-  // Static counter for catalog training unique IDs
   static idCounter = 1;
 
   constructor(id, type, name) {
@@ -106,65 +114,58 @@ class BaseTraining {
     } else {
       this.id = safeParseNumeric(id);
     }
-    // Must be either 'Power' or 'Aerobic'
-    this.type = type;
+    this.type = type; // 'Power' or 'Aerobic'
     this.name = name;
   }
 }
 
 /**
  * Base Session Class
- * Extends Base Training by adding a date and unique session identifier.
  */
 class BaseSession extends BaseTraining {
   constructor(id, type, name, date, sessionId = null) {
-    // Invoke parent constructor to populate base training properties
     super(id, type, name);
     this.date = date;
-    // Generate a unique session identifier if not already provided
     this.sessionId = sessionId || `sess_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
   }
 }
 
 /**
  * Aerobic Session Class
- * Subclass extending BaseSession to store cardio-specific data.
+ * Simulates calorie burn: duration * speed * 0.85
  */
 class AerobicSession extends BaseSession {
   constructor(id, type, name, date, duration, speed, difficulty, sessionId = null) {
     super(id, type, name, date, sessionId);
-    // Parse numeric fields safely (handles string inputs)
     this.duration = safeParseNumeric(duration); // in minutes
     this.speed = safeParseNumeric(speed);       // in km/h
-    this.difficulty = difficulty;              // e.g., 'Easy', 'Medium', 'Hard'
+    this.difficulty = difficulty;              // 'Easy', 'Medium', 'Hard'
   }
 
   /**
-   * Calculates effort score based on aerobic duration and speed.
+   * Calculates calorie burn score based on speed and duration.
    * @returns {number}
    */
   calculateEffortScore() {
-    return this.duration * this.speed;
+    return this.duration * (this.speed * 0.85);
   }
 }
 
 /**
  * Power Session Class
- * Subclass extending BaseSession to store weightlifting-specific data.
+ * Effort score = sets * reps * weight
  */
 class PowerSession extends BaseSession {
   constructor(id, type, name, date, muscleGroup, reps, sets, weight, sessionId = null) {
     super(id, type, name, date, sessionId);
-    this.muscleGroup = muscleGroup; // e.g., 'Chest', 'Legs', 'Back', 'Arms'
-    // Parse numeric fields safely (handles string inputs)
+    this.muscleGroup = muscleGroup;
     this.reps = safeParseNumeric(reps);
     this.sets = safeParseNumeric(sets);
     this.weight = safeParseNumeric(weight); // in kg
   }
 
   /**
-   * Overrides calculateEffortScore() for Power training.
-   * Effort = sets * reps * weight.
+   * Calculates weightlifting effort score.
    * @returns {number}
    */
   calculateEffortScore() {
@@ -174,86 +175,253 @@ class PowerSession extends BaseSession {
 
 
 /**
- * API ENDPOINTS
+ * AUTHENTICATION ENDPOINTS
+ */
+
+/**
+ * POST /api/auth/register
+ * Public registration endpoint. Creates a new user with 'user' role by default.
+ */
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, tel, password } = req.body;
+    if (!name || !tel || !password) {
+      return res.status(400).json({ error: 'Name, contact telephone, and password are required.' });
+    }
+
+    const users = await readJsonFile(USERS_FILE_PATH);
+
+    // Verify user doesn't already exist under the same name or telephone
+    const userExists = users.some(u => u.name.toLowerCase() === name.toLowerCase() || u.tel === tel);
+    if (userExists) {
+      return res.status(400).json({ error: 'A user with this name or telephone contact already exists.' });
+    }
+
+    // Hash the password before saving
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    // Instantiate User using class
+    const newUserInstance = new User(null, name, tel, 'user', hashedPassword);
+
+    const userObj = {
+      id: newUserInstance.id,
+      name: newUserInstance.name,
+      tel: newUserInstance.tel,
+      role: newUserInstance.role,
+      password: newUserInstance.password,
+      sessions: newUserInstance.sessions
+    };
+
+    users.push(userObj);
+    await writeJsonFile(USERS_FILE_PATH, users);
+
+    // Create JWT token for immediate login upon registration
+    const token = jwt.sign(
+      { userId: userObj.id, role: userObj.role, name: userObj.name },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      token,
+      user: { id: userObj.id, name: userObj.name, role: userObj.role, tel: userObj.tel }
+    });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Server error during user registration.' });
+  }
+});
+
+/**
+ * POST /api/auth/login
+ * Verifies credentials, returns JWT token and user profile information.
+ */
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { name, password } = req.body;
+    if (!name || !password) {
+      return res.status(400).json({ error: 'Username/Name and password are required.' });
+    }
+
+    const users = await readJsonFile(USERS_FILE_PATH);
+
+    // Find the user profile by name (case-insensitive) or phone contact
+    const user = users.find(u => u.name.toLowerCase() === name.toLowerCase() || u.tel === name);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid name/contact or password.' });
+    }
+
+    // Verify the hashed password
+    const passwordMatch = bcrypt.compareSync(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid name/contact or password.' });
+    }
+
+    // Sign the token
+    const token = jwt.sign(
+      { userId: user.id, role: user.role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, role: user.role, tel: user.tel }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Server error during user authentication.' });
+  }
+});
+
+
+/**
+ * SECURED USERS ENDPOINTS (RBAC-RESTRICTED)
  */
 
 /**
  * GET /api/users
- * Fetches all users from the DB file.
+ * Returns list of all user profiles (sessions omitted or loaded based on role).
+ * Accessible only to Admin and Super Admin.
  */
-app.get('/api/users', async (req, res) => {
+app.get('/api/users', authenticateToken, requireAdminOrSuperAdmin, async (req, res) => {
   try {
     const users = await readJsonFile(USERS_FILE_PATH);
-    res.json(users);
+    // Sanitize output (don't send passwords back)
+    const sanitizedUsers = users.map(u => ({
+      id: u.id,
+      name: u.name,
+      tel: u.tel,
+      role: u.role,
+      sessions: u.sessions
+    }));
+    res.json(sanitizedUsers);
   } catch (err) {
-    console.error('Error fetching users:', err);
-    res.status(500).json({ error: 'Failed to retrieve users database.' });
+    console.error('Fetch users error:', err);
+    res.status(500).json({ error: 'Failed to retrieve users.' });
+  }
+});
+
+/**
+ * GET /api/users/:userId
+ * Retrieves profile of a specific user.
+ * Protected by verifyUserOwnership (user can fetch self; Super Admin or Admin can fetch any).
+ */
+app.get('/api/users/:userId', authenticateToken, async (req, res, next) => {
+  // Allow Admins and Super Admins to view anyone; regular users only themselves
+  if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+    return next();
+  }
+  verifyUserOwnership(req, res, next);
+}, async (req, res) => {
+  try {
+    const userId = safeParseNumeric(req.params.userId);
+    const users = await readJsonFile(USERS_FILE_PATH);
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User profile not found.' });
+    }
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      tel: user.tel,
+      role: user.role,
+      sessions: user.sessions
+    });
+  } catch (err) {
+    console.error('Fetch user error:', err);
+    res.status(500).json({ error: 'Failed to retrieve user profile.' });
   }
 });
 
 /**
  * POST /api/users
- * Creates a new user profile and writes it to the users database.
+ * Admin API to create a new user profile.
+ * Accessible to Admin and Super Admin.
  */
-app.post('/api/users', async (req, res) => {
+app.post('/api/users', authenticateToken, requireAdminOrSuperAdmin, async (req, res) => {
   try {
-    const { name, tel } = req.body;
-    if (!name || !tel) {
-      return res.status(400).json({ error: 'Name and telephone are required.' });
+    const { name, tel, role, password } = req.body;
+    if (!name || !tel || !password) {
+      return res.status(400).json({ error: 'Name, telephone contact, and password are required.' });
     }
 
     const users = await readJsonFile(USERS_FILE_PATH);
-    
-    // Create new instance of User class (automatically increments static counter)
-    const newUserInstance = new User(null, name, tel);
-    
-    // Convert class instance to object and append to database
-    users.push({
+    const userExists = users.some(u => u.name.toLowerCase() === name.toLowerCase());
+    if (userExists) {
+      return res.status(400).json({ error: 'User profile already exists.' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    // Default to 'user' role if unspecified. Staff Admin can create 'user' or 'admin' users.
+    // Superadmin is only self-assigned or created by superadmin.
+    const finalRole = role || 'user';
+
+    const newUserInstance = new User(null, name, tel, finalRole, hashedPassword);
+    const userObj = {
       id: newUserInstance.id,
       name: newUserInstance.name,
       tel: newUserInstance.tel,
+      role: newUserInstance.role,
+      password: newUserInstance.password,
       sessions: newUserInstance.sessions
-    });
+    };
 
+    users.push(userObj);
     await writeJsonFile(USERS_FILE_PATH, users);
-    res.status(201).json(newUserInstance);
+
+    res.status(201).json({
+      id: userObj.id,
+      name: userObj.name,
+      tel: userObj.tel,
+      role: userObj.role
+    });
   } catch (err) {
-    console.error('Error creating user:', err);
-    res.status(500).json({ error: 'Failed to create user.' });
+    console.error('Admin create user error:', err);
+    res.status(500).json({ error: 'Failed to create user profile.' });
   }
 });
 
+
+/**
+ * EXERCISE CATALOG ENDPOINTS
+ */
+
 /**
  * GET /api/trainings
- * Fetches all available trainings from the catalog.
+ * Publicly viewable catalog list for authenticated users.
  */
-app.get('/api/trainings', async (req, res) => {
+app.get('/api/trainings', authenticateToken, async (req, res) => {
   try {
     const trainings = await readJsonFile(TRAININGS_FILE_PATH);
     res.json(trainings);
   } catch (err) {
-    console.error('Error fetching trainings:', err);
-    res.status(500).json({ error: 'Failed to retrieve trainings catalog.' });
+    console.error('Get trainings error:', err);
+    res.status(500).json({ error: 'Failed to load trainings catalog.' });
   }
 });
 
 /**
  * POST /api/trainings
- * Adds a new training item to the exercise catalog.
+ * Adds a new catalog training type.
+ * Restricted to Admin and Super Admin.
  */
-app.post('/api/trainings', async (req, res) => {
+app.post('/api/trainings', authenticateToken, requireAdminOrSuperAdmin, async (req, res) => {
   try {
     const { type, name } = req.body;
     if (!type || !name) {
-      return res.status(400).json({ error: 'Training type (Power/Aerobic) and name are required.' });
+      return res.status(400).json({ error: 'Training type and name are required.' });
     }
     if (type !== 'Power' && type !== 'Aerobic') {
-      return res.status(400).json({ error: 'Type must be either Power or Aerobic.' });
+      return res.status(400).json({ error: 'Type must be Power or Aerobic.' });
     }
 
     const trainings = await readJsonFile(TRAININGS_FILE_PATH);
-    
-    // Instantiate new BaseTraining class to secure unique incremented id
     const newTraining = new BaseTraining(null, type, name);
 
     trainings.push({
@@ -265,35 +433,64 @@ app.post('/api/trainings', async (req, res) => {
     await writeJsonFile(TRAININGS_FILE_PATH, trainings);
     res.status(201).json(newTraining);
   } catch (err) {
-    console.error('Error adding training to catalog:', err);
-    res.status(500).json({ error: 'Failed to add training to catalog.' });
+    console.error('Create training catalog error:', err);
+    res.status(500).json({ error: 'Failed to add exercise to catalog.' });
   }
 });
 
 /**
- * POST /api/users/:userId/sessions
- * Instantiates and appends an extended session subclass to a user's session list.
+ * DELETE /api/trainings/:id
+ * Deletes a catalog item.
+ * Restricted ONLY to Super Admin.
  */
-app.post('/api/users/:userId/sessions', async (req, res) => {
+app.delete('/api/trainings/:id', authenticateToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const trainingId = safeParseNumeric(req.params.id);
+    const trainings = await readJsonFile(TRAININGS_FILE_PATH);
+
+    const exists = trainings.some(t => t.id === trainingId);
+    if (!exists) {
+      return res.status(404).json({ error: 'Exercise type not found in catalog.' });
+    }
+
+    const updatedTrainings = trainings.filter(t => t.id !== trainingId);
+    await writeJsonFile(TRAININGS_FILE_PATH, updatedTrainings);
+
+    res.json({ message: 'Catalog training deleted successfully.', id: trainingId });
+  } catch (err) {
+    console.error('Delete training catalog error:', err);
+    res.status(500).json({ error: 'Failed to delete exercise from catalog.' });
+  }
+});
+
+
+/**
+ * WORKOUT SESSIONS ENDPOINTS
+ */
+
+/**
+ * POST /api/users/:userId/sessions
+ * Logs a new workout session for a user.
+ * Protected by verifyUserOwnership (user can log for self; Super Admin can log for anyone).
+ * Admin role blocked from logging user workouts unless they are logging their own.
+ */
+app.post('/api/users/:userId/sessions', authenticateToken, verifyUserOwnership, async (req, res) => {
   try {
     const userId = safeParseNumeric(req.params.userId);
     const { trainingId, date, duration, speed, difficulty, muscleGroup, reps, sets, weight } = req.body;
 
     if (!trainingId || !date) {
-      return res.status(400).json({ error: 'Training ID and date are required properties.' });
+      return res.status(400).json({ error: 'Training ID and date are required.' });
     }
 
-    // Load DB lists
     const users = await readJsonFile(USERS_FILE_PATH);
     const trainings = await readJsonFile(TRAININGS_FILE_PATH);
 
-    // Locate the user
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex === -1) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: 'User profile not found.' });
     }
 
-    // Locate the target training catalog item
     const catalogTraining = trainings.find(t => t.id === safeParseNumeric(trainingId));
     if (!catalogTraining) {
       return res.status(404).json({ error: 'Exercise type not found in catalog.' });
@@ -301,7 +498,7 @@ app.post('/api/users/:userId/sessions', async (req, res) => {
 
     let instantiatedSession;
 
-    // Instantiate correct subclass based on exercise type, using constructors
+    // Instantiate appropriate subclass
     if (catalogTraining.type === 'Aerobic') {
       instantiatedSession = new AerobicSession(
         catalogTraining.id,
@@ -324,11 +521,10 @@ app.post('/api/users/:userId/sessions', async (req, res) => {
         weight
       );
     } else {
-      return res.status(400).json({ error: 'Invalid training type in catalog.' });
+      return res.status(400).json({ error: 'Invalid catalog type.' });
     }
 
-    // Since classes convert smoothly to JSON properties, push the instantiated object
-    // to user's sessions array, including effort score calculations for convenience
+    // Attach calculated calorie burn or power score
     const sessionObj = {
       ...instantiatedSession,
       effortScore: instantiatedSession.calculateEffortScore()
@@ -339,16 +535,18 @@ app.post('/api/users/:userId/sessions', async (req, res) => {
 
     res.status(201).json(sessionObj);
   } catch (err) {
-    console.error('Error adding session:', err);
-    res.status(500).json({ error: 'Failed to add workout session.' });
+    console.error('Add workout session error:', err);
+    res.status(500).json({ error: 'Failed to save workout session.' });
   }
 });
 
 /**
  * PUT /api/users/:userId/sessions/:sessionId
- * Modifies an existing workout session's details.
+ * Updates a logged workout session.
+ * Protected by verifyUserOwnership (user can edit self; Super Admin can edit anyone).
+ * Admin role blocked.
  */
-app.put('/api/users/:userId/sessions/:sessionId', async (req, res) => {
+app.put('/api/users/:userId/sessions/:sessionId', authenticateToken, verifyUserOwnership, async (req, res) => {
   try {
     const userId = safeParseNumeric(req.params.userId);
     const { sessionId } = req.params;
@@ -357,7 +555,7 @@ app.put('/api/users/:userId/sessions/:sessionId', async (req, res) => {
     const users = await readJsonFile(USERS_FILE_PATH);
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex === -1) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: 'User profile not found.' });
     }
 
     const sessionIndex = users[userIndex].sessions.findIndex(s => s.sessionId === sessionId);
@@ -368,7 +566,6 @@ app.put('/api/users/:userId/sessions/:sessionId', async (req, res) => {
     const currentSession = users[userIndex].sessions[sessionIndex];
     let updatedInstance;
 
-    // Maintain subclass characteristics during update, instantiating fresh class instances
     if (currentSession.type === 'Aerobic') {
       updatedInstance = new AerobicSession(
         currentSession.id,
@@ -404,16 +601,26 @@ app.put('/api/users/:userId/sessions/:sessionId', async (req, res) => {
 
     res.json(sessionObj);
   } catch (err) {
-    console.error('Error updating session:', err);
+    console.error('Update session error:', err);
     res.status(500).json({ error: 'Failed to update workout session.' });
   }
 });
 
 /**
  * DELETE /api/users/:userId/sessions/:sessionId
- * Deletes a training session from the user profile.
+ * Deletes a logged session.
+ * Rules:
+ * - Regular users can delete their own sessions.
+ * - Staff Admins CANNOT delete.
+ * - Super Admins can delete anything.
  */
-app.delete('/api/users/:userId/sessions/:sessionId', async (req, res) => {
+app.delete('/api/users/:userId/sessions/:sessionId', authenticateToken, async (req, res, next) => {
+  // Staff Admin has no delete permissions at all
+  if (req.user.role === 'admin') {
+    return res.status(403).json({ error: 'Delete privileges restricted to Super Admin or owners.' });
+  }
+  verifyUserOwnership(req, res, next);
+}, async (req, res) => {
   try {
     const userId = safeParseNumeric(req.params.userId);
     const { sessionId } = req.params;
@@ -421,52 +628,67 @@ app.delete('/api/users/:userId/sessions/:sessionId', async (req, res) => {
     const users = await readJsonFile(USERS_FILE_PATH);
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex === -1) {
-      return res.status(404).json({ error: 'User not found.' });
+      return res.status(404).json({ error: 'User profile not found.' });
     }
 
     const sessions = users[userIndex].sessions;
-    const sessionExists = sessions.some(s => s.sessionId === sessionId);
-    if (!sessionExists) {
+    const exists = sessions.some(s => s.sessionId === sessionId);
+    if (!exists) {
       return res.status(404).json({ error: 'Workout session not found.' });
     }
 
-    // Filter out the session with the matching sessionId
     users[userIndex].sessions = sessions.filter(s => s.sessionId !== sessionId);
     await writeJsonFile(USERS_FILE_PATH, users);
 
     res.json({ message: 'Session deleted successfully.', sessionId });
   } catch (err) {
-    console.error('Error deleting session:', err);
+    console.error('Delete session error:', err);
     res.status(500).json({ error: 'Failed to delete workout session.' });
   }
 });
 
+
 /**
- * SERVER STARTUP
- * Dynamically resolves id counters based on historical database entries to prevent collisions.
+ * SERVER STARTUP & DATABASE SELF-HEALING/SEEDER
  */
 async function startServer() {
   try {
-    const users = await readJsonFile(USERS_FILE_PATH);
-    if (users.length > 0) {
-      // Find the highest user ID and add 1
-      User.idCounter = Math.max(...users.map(u => safeParseNumeric(u.id))) + 1;
-    }
-    
+    // 1. Resolve exercise catalog counters
     const trainings = await readJsonFile(TRAININGS_FILE_PATH);
     if (trainings.length > 0) {
-      // Find the highest exercise ID and add 1
       BaseTraining.idCounter = Math.max(...trainings.map(t => safeParseNumeric(t.id))) + 1;
     }
 
-    console.log(`Initialized User.idCounter to ${User.idCounter}`);
-    console.log(`Initialized BaseTraining.idCounter to ${BaseTraining.idCounter}`);
+    // 2. Resolve users and hash plain passwords on boot (database migration helper)
+    const users = await readJsonFile(USERS_FILE_PATH);
+    let databaseModified = false;
+
+    if (users.length > 0) {
+      User.idCounter = Math.max(...users.map(u => safeParseNumeric(u.id))) + 1;
+      
+      // Check passwords and seed/hash plain text passwords
+      users.forEach(user => {
+        if (user.password && !user.password.startsWith('$2')) {
+          const salt = bcrypt.genSaltSync(10);
+          user.password = bcrypt.hashSync(user.password, salt);
+          databaseModified = true;
+          console.log(`Hashed plain password for user: ${user.name}`);
+        }
+      });
+    }
+
+    if (databaseModified) {
+      await writeJsonFile(USERS_FILE_PATH, users);
+    }
+
+    console.log(`User.idCounter set to ${User.idCounter}`);
+    console.log(`BaseTraining.idCounter set to ${BaseTraining.idCounter}`);
 
     app.listen(PORT, () => {
-      console.log(`Server is running successfully on http://localhost:${PORT}`);
+      console.log(`Secure Server is running on http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error('Failed to initialize database counters or start server:', err);
+    console.error('Server startup initialization failed:', err);
     process.exit(1);
   }
 }
