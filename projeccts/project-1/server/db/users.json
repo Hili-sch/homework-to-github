@@ -37,6 +37,29 @@
         "reps": 8,
         "sets": 3,
         "weight": 100
+      },
+      {
+        "id": 3,
+        "type": "Aerobic",
+        "name": "Elliptical Workout",
+        "date": "2026-07-20",
+        "sessionId": "sess_1784565489217_390",
+        "duration": 17,
+        "speed": 7,
+        "difficulty": "Medium",
+        "effortScore": 101.15
+      },
+      {
+        "id": 4,
+        "type": "Power",
+        "name": "Bench Press",
+        "date": "2026-07-19",
+        "sessionId": "sess_1784565598847_129",
+        "muscleGroup": "Chest",
+        "reps": 12,
+        "sets": 5,
+        "weight": 50,
+        "effortScore": 3000
       }
     ]
   },
@@ -83,7 +106,59 @@
     "name": "Staff Admin",
     "tel": "054-9999999",
     "role": "admin",
-    "password": "$2b$10$wbZz8bvWIUkmm9JsldJloeFt6nTJsIlPgXzePd.9N1a4BOR9ErNJS",
+    "password": "$2b$10$6fM8UzKkPVdABkPnzlG2f.COmUJVxVbRmTEZTs/yldSTCnd345EzC",
+    "sessions": []
+  },
+  {
+    "id": 5,
+    "name": "Shlomo",
+    "tel": "053-6789543",
+    "role": "user",
+    "password": "$2b$10$/tbefsvp83MbW0bnnsgpKeB6yNhfJYZuGHPMSTi6m2VQ9CNcIomFK",
+    "sessions": [
+      {
+        "id": 2,
+        "type": "Aerobic",
+        "name": "Stationary Cycling",
+        "date": "2020-04-01",
+        "sessionId": "sess_1784492083099_730",
+        "duration": 32,
+        "speed": 7.2,
+        "difficulty": "Medium",
+        "effortScore": 195.84
+      },
+      {
+        "id": 4,
+        "type": "Power",
+        "name": "Bench Press",
+        "date": "2021-04-07",
+        "sessionId": "sess_1784492165896_508",
+        "muscleGroup": "Shoulders",
+        "reps": 12,
+        "sets": 3,
+        "weight": 35,
+        "effortScore": 1260
+      },
+      {
+        "id": 5,
+        "type": "Power",
+        "name": "Deadlift",
+        "date": "2023-12-12",
+        "sessionId": "sess_1784492288535_96",
+        "muscleGroup": "Core",
+        "reps": 13,
+        "sets": 3,
+        "weight": 45,
+        "effortScore": 1755
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "jacob",
+    "tel": "0512343434",
+    "role": "user",
+    "password": "$2b$10$8OMZOPDbZOzvG1/tyWiACup7G0ZSS1XjthobN8JEaPgfZAtJ2C53y",
     "sessions": []
   }
 ]

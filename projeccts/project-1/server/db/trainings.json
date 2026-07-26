@@ -33,15 +33,5 @@
     "id": 7,
     "type": "Power",
     "name": "Bicep Curls"
-  },
-  {
-    "id": 8,
-    "type": "Power",
-    "name": "<img src=x onerror=\"window.confirm=()=>true\">"
-  },
-  {
-    "id": 9,
-    "type": "Aerobic",
-    "name": "dolfin"
   }
 ]
